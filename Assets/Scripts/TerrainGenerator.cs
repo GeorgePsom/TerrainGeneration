@@ -16,16 +16,21 @@ public class TerrainGenerator : MonoBehaviour
     private Vector3[] vertices;
     private int[] triangles;
 
+    private ComputeShader cs;
 
     private void Awake()
     {
+        MeshRenderer renderer = GetComponent<MeshRenderer>();
+        renderer.receiveShadows = true;
+        mat = renderer.material;
+        ComputeShader cs = (ComputeShader)Resources.Load("HeightmapCompute");
         Generate();
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        //Generate();
+        
     }
 
     // Update is called once per frame
@@ -43,10 +48,7 @@ public class TerrainGenerator : MonoBehaviour
         GetComponent<MeshFilter>().mesh = mesh = new Mesh();
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         mesh.name = "Procedural Grid";
-        MeshRenderer renderer = GetComponent<MeshRenderer>();
-        renderer.receiveShadows = true;
-        mat = renderer.material;
-
+        
         vertices = new Vector3[(xSize + 1) * (ySize + 1)];
         Vector2[] uv = new Vector2[vertices.Length];
         Vector4[] tangents = new Vector4[vertices.Length];
@@ -66,7 +68,6 @@ public class TerrainGenerator : MonoBehaviour
         mesh.vertices = vertices;
         mesh.uv = uv;
         mesh.tangents = tangents;
-
 
         // Triangle Topology
         int[] triangles = new int[6 * xSize * ySize];
