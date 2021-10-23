@@ -10,16 +10,20 @@ public class TerrainGenerator : MonoBehaviour
     public int xSize, ySize;
     public float Scale;
 
-
+    public bool generate3DNoise = false;
     private Mesh mesh;
     private Material mat;
     public Slicer slicer;
+    public perlinNoiseGenerator noiseGenerator;
     public int Octaves;
     private List<Vector3> vertices;
     private List<int> triangles;
     private RenderTexture rt;
     public ComputeShader cs;
-    public Texture2D noise;
+    public ComputeShader perlinNoiseCS;
+    public Texture3D perlinNoise3D;
+    private RenderTexture perlinNoise3DRT;
+    
 
     private void Awake()
     {
@@ -32,13 +36,13 @@ public class TerrainGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+       
+        GeneratePerlinNoise3D();
         MeshRenderer renderer = GetComponent<MeshRenderer>();
         renderer.receiveShadows = true;
         mat = renderer.material;
-        //ComputeShader cs = (ComputeShader)Resources.Load("HeightmapCompute.compute");
-
-        rt = new RenderTexture(64, 64, 0);
        
+        rt = new RenderTexture(64, 64, 0);
         rt.enableRandomWrite = true;
         rt.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
         rt.format = RenderTextureFormat.ARGB32;
@@ -53,10 +57,11 @@ public class TerrainGenerator : MonoBehaviour
 
     
 
-    // Update is called once per frame
+    
     void Update()
     {
-        
+        //GeneratePerlinNoise3D();
+        //Generate();
     }
     private void OnValidate()
     {
@@ -71,12 +76,12 @@ public class TerrainGenerator : MonoBehaviour
         triangles = new List<int>();
         vertices = new List<Vector3>();
         cs.SetTexture(0, "_Density", rt);
-        cs.SetTexture(0, "_PerlinNoise", noise);
-        cs.SetInt("_NoiseResolution", noise.width);
+        
         cs.SetInt("_Octaves", Octaves);
+        cs.SetTexture(0, "_PerlinNoise", perlinNoise3DRT);
         cs.Dispatch(0, 8, 8, 8);
         slicer.Save(rt, "Density");
-        //AssetDatabase.CreateAsset(rt, "Assets/3D.asset");
+        
 
         //Vector2[] uv = new Vector2[vertices.Length];
         //Vector4[] tangents = new Vector4[vertices.Length];
@@ -112,5 +117,62 @@ public class TerrainGenerator : MonoBehaviour
         //    }
         //}
         //mesh.triangles = triangles;
+    }
+
+    private void GeneratePerlinNoise3D()
+    {
+
+        perlinNoise3DRT = new RenderTexture(64, 64, 0);
+
+        perlinNoise3DRT.enableRandomWrite = true;
+        perlinNoise3DRT.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+        perlinNoise3DRT.format = RenderTextureFormat.ARGB32;
+        perlinNoise3DRT.volumeDepth = 64;
+        perlinNoise3DRT.Create();
+        
+        ComputeBuffer perlinBuffer = new ComputeBuffer(64 * 64 * 64, sizeof(float));
+        float[] perlinArray = new float[64 * 64 * 64];
+
+        //// Configure the texture
+        int size = 64;
+        TextureFormat format = TextureFormat.RGBA32;
+        TextureWrapMode wrapMode = TextureWrapMode.Clamp;
+
+        // Create the texture and apply the configuration
+        Texture3D texture = new Texture3D(size, size, size, format, false);
+        texture.wrapMode = wrapMode;
+
+        // Create a 3-dimensional array to store color data
+        Color[] colors = new Color[size * size * size];
+
+        // Populate the array so that the x, y, and z values of the texture will map to red, blue, and green colors
+        float inverseResolution = 1.0f / (size - 1.0f);
+        for (int z = 0; z < size; z++)
+        {
+            int zOffset = z * size * size;
+            for (int y = 0; y < size; y++)
+            {
+                int yOffset = y * size;
+                for (int x = 0; x < size; x++)
+                {
+                    float color = perlinNoiseGenerator.get3DPerlinNoise(new Vector3(x, y, z), 1.01f);
+                    perlinArray[x + yOffset + zOffset] = color;
+                    colors[x + yOffset + zOffset] = new Color(color, color, color);
+                }
+            }
+        }
+
+        // Copy the color values to the texture
+        texture.SetPixels(colors);
+
+        // Apply the changes to the texture and upload the updated texture to the GPU
+        texture.Apply();
+
+        // Save the texture to your Unity Project
+        AssetDatabase.CreateAsset(texture, "Assets/PerlinNoise3DTexture.asset");
+        perlinBuffer.SetData(perlinArray);
+        perlinNoiseCS.SetTexture(0, "_PerlinNoise3D", perlinNoise3DRT);
+        perlinNoiseCS.SetBuffer(0, "_PerlinNoiseBuffer", perlinBuffer);
+        perlinNoiseCS.Dispatch(0, 64 / 8, 64 / 8, 64 / 8);
     }
 }
