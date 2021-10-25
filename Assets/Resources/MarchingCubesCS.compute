@@ -1,0 +1,48 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#pragma enable_d3d11_debug_symbols
+
+#include "MarchingCubesVar.hlsl"
+#include "MarchingCubesInclude.hlsl"
+
+
+
+RWStructuredBuffer<float3> _Vertices;
+RWStructuredBuffer<int> _Triangles;
+StructuredBuffer<int> _PrefixSumPolygons;
+
+float _TerrainSurface;
+
+[numthreads(8,8,8)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	float4 corner0123;
+	float4 corner4567;
+	getVoxelCorners(int3(id.xyz), corner0123, corner4567);
+
+	int caseNum = GetCaseIndex(corner0123, corner4567, _TerrainSurface);
+	if (caseNum == 0 || caseNum == 255)
+		return;
+	int index1D = id.x + id.y * 64 + id.z * 64 * 64;
+	
+	int edgeIndex = 0;
+	for (int i = 0; i < 5; i++)
+	{
+		for (int tr = 0; tr < 3; tr++)
+		{
+			int index = _TriangleTable[caseNum].triangles[edgeIndex];
+			if (index == -1)
+				return;
+
+			float3 vert1 = float3(id.xyz) + EdgeTable[index][0];
+			float3 vert2 = float3(id.xyz) + EdgeTable[index][1];
+			float3 vertex = (vert1 + vert2) / 2.0f.xxx;
+			int nPreviousPolys = index1D > 0 ? _PrefixSumPolygons[index1D - 1] : 0;
+			int indexCurrentVertex = 3 * nPreviousPolys + i * 3 + tr;
+			_Vertices[indexCurrentVertex] = vertex;
+			_Triangles[indexCurrentVertex] = indexCurrentVertex;
+		}
+	}
+	
+
+}

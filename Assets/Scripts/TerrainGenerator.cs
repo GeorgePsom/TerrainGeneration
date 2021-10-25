@@ -11,18 +11,16 @@ public class TerrainGenerator : MonoBehaviour
     public float Scale;
 
     public bool generate3DNoise = false;
-    private Mesh mesh;
-    private Material mat;
+    
     public Slicer slicer;
     public perlinNoiseGenerator noiseGenerator;
     public int Octaves;
-    private List<Vector3> vertices;
-    private List<int> triangles;
-
+    
     public ComputeShader cs;
     public ComputeShader perlinNoiseCS;
     public ComputeShader prefixSumCS;
     public ComputeShader numPolygonsCS;
+	public ComputeShader marchingCubesCS;
 
     private RenderTexture rt;
     public Texture3D perlinNoise3D;
@@ -32,9 +30,10 @@ public class TerrainGenerator : MonoBehaviour
     private float[] terrainMap;
     private ComputeBuffer numPolysBuffer;
 
-
-
-    private void Awake()
+	private MeshFilter meshFilter;
+	private Mesh mesh;
+	private Material mat;
+	private void Awake()
     {
         
 
@@ -47,6 +46,7 @@ public class TerrainGenerator : MonoBehaviour
     {
        
         GeneratePerlinNoise3D();
+		meshFilter = GetComponent<MeshFilter>();
         MeshRenderer renderer = GetComponent<MeshRenderer>();
         renderer.receiveShadows = true;
         mat = renderer.material;
@@ -114,11 +114,8 @@ public class TerrainGenerator : MonoBehaviour
 
     private void Generate()
     {
-        GetComponent<MeshFilter>().mesh = mesh = new Mesh();
-        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-        mesh.name = "Procedural Grid";
-        triangles = new List<int>();
-        vertices = new List<Vector3>();
+      
+      
         cs.SetTexture(0, "_Density", rt);
         
         cs.SetInt("_Octaves", Octaves);
@@ -140,7 +137,12 @@ public class TerrainGenerator : MonoBehaviour
         numPolysBuffer = new ComputeBuffer(64 * 64 * 64, sizeof(int));
         numPolygonsCS.SetBuffer(0, "_NumOfPolygons", numPolysBuffer);
         numPolygonsCS.Dispatch(0, 8, 8, 8);
-
+        //int[] prefixSumArray = new int[64 * 64 * 64];
+        //numPolysBuffer.GetData(prefixSumArray);
+        //for (int i = 0; i < prefixSumArray.Length; i++)
+        //{
+        //    Debug.Log("Voxel: " + i + "  polysAccum: " + prefixSumArray[i]);
+        //}
 
 
         // Find the prefix sum of polygons
@@ -153,11 +155,48 @@ public class TerrainGenerator : MonoBehaviour
             prefixSumCS.Dispatch(0, 64 * 64 * 64 / 8, 1, 1);
 
         }
+		//int[] prefixSumArray =  new int[64 * 64 * 64];
+		//numPolysBuffer.GetData(prefixSumArray);
+		//for(int i = 0; i < prefixSumArray.Length; i++)
+  //      {
+		//	Debug.Log("Voxel: " + i + "  polysAccum: " + prefixSumArray[i]);
+  //      }
+		
 
+		/*
 
 		// March cubes
+		//RWStructuredBuffer<float3> _Vertices;
+		//RWStructuredBuffer<int> _Triangles;
+		//StructuredBuffer<int> _PrefixSumPolygons;
+		
+		//float _TerrainSurface;
+		ComputeBuffer verticesBuffer = new ComputeBuffer(3 * totalPolygs, 3 * sizeof(float));
+		Vector3[] verticesArray = new Vector3[3 * totalPolygs];
+		ComputeBuffer trianglesBuffer = new ComputeBuffer(3 * totalPolygs, sizeof(int));
+		int[] trianglesArray = new int[3 * totalPolygs];
+		marchingCubesCS.SetBuffer(0, "_Vertices", verticesBuffer);
+		marchingCubesCS.SetBuffer(0, "_Triangles", trianglesBuffer);
+		marchingCubesCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
+		marchingCubesCS.SetFloat("_TerrainSurface", TerrainSurface);
+		marchingCubesCS.SetBuffer(0, "_TerrainMap", densityBuffer);
+		marchingCubesCS.SetBuffer(0, "_PrefixSumPolygons", numPolysBuffer);
+		marchingCubesCS.Dispatch(0, 8, 8, 8);
 
-    }
+		verticesBuffer.GetData(verticesArray);
+		trianglesBuffer.GetData(trianglesArray);
+
+		mesh = new Mesh();
+		mesh.vertices = verticesArray;
+		mesh.triangles = trianglesArray;
+		mesh.RecalculateNormals();
+		meshFilter.mesh = mesh;
+
+
+
+		*/
+
+	}
 
     private void GeneratePerlinNoise3D()
     {
