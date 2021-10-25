@@ -28,5 +28,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 		
 		sum += (_TriangleTable[caseNum].triangles[j] > 0) ? 1 : 0;
 	}
-	_NumOfPolygons[id.x + id.y * 64 + id.z * 64 * 64] = sum;
+	_NumOfPolygons[id.x + id.y * 64 + id.z * 64 * 64] = sum / 3;
 }
