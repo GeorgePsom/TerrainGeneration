@@ -163,12 +163,13 @@ public class TerrainGenerator : MonoBehaviour
         }
         int[] prefixSumArray = new int[64 * 64 * 64];
         numPolysBuffer.GetData(prefixSumArray);
-        for (int i = 0; i < prefixSumArray.Length; i++)
-        {
-            Debug.Log("Voxel: " + i + "  polysAccum: " + prefixSumArray[i]);
-        }
+		int totalPolygs = prefixSumArray[prefixSumArray.Length - 1];
+        //for (int i = 0; i < prefixSumArray.Length; i++)
+        //{
+        //    Debug.Log("Voxel: " + i + "  polysAccum: " + prefixSumArray[i]);
+        //}
 
-        /*
+
 
 
         // March cubes
@@ -178,27 +179,27 @@ public class TerrainGenerator : MonoBehaviour
 
         //float _TerrainSurface;
         ComputeBuffer verticesBuffer = new ComputeBuffer(3 * totalPolygs, 3 * sizeof(float));
-		Vector3[] verticesArray = new Vector3[3 * totalPolygs];
-		ComputeBuffer trianglesBuffer = new ComputeBuffer(3 * totalPolygs, sizeof(int));
-		int[] trianglesArray = new int[3 * totalPolygs];
-		marchingCubesCS.SetBuffer(0, "_Vertices", verticesBuffer);
-		marchingCubesCS.SetBuffer(0, "_Triangles", trianglesBuffer);
-		marchingCubesCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
-		marchingCubesCS.SetFloat("_TerrainSurface", TerrainSurface);
-		marchingCubesCS.SetBuffer(0, "_TerrainMap", densityBuffer);
-		marchingCubesCS.SetBuffer(0, "_PrefixSumPolygons", numPolysBuffer);
-		marchingCubesCS.Dispatch(0, 8, 8, 8);
+        Vector3[] verticesArray = new Vector3[3 * totalPolygs];
+        ComputeBuffer trianglesBuffer = new ComputeBuffer(3 * totalPolygs, sizeof(int));
+        int[] trianglesArray = new int[3 * totalPolygs];
+        marchingCubesCS.SetBuffer(0, "_Vertices", verticesBuffer);
+        marchingCubesCS.SetBuffer(0, "_Triangles", trianglesBuffer);
+        marchingCubesCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
+        marchingCubesCS.SetFloat("_TerrainSurface", TerrainSurface);
+        marchingCubesCS.SetBuffer(0, "_TerrainMap", densityBuffer);
+        marchingCubesCS.SetBuffer(0, "_PrefixSumPolygons", numPolysBuffer);
+        marchingCubesCS.Dispatch(0, 8, 8, 8);
 
-		verticesBuffer.GetData(verticesArray);
-		trianglesBuffer.GetData(trianglesArray);
+        verticesBuffer.GetData(verticesArray);
+        trianglesBuffer.GetData(trianglesArray);
 
-		mesh = new Mesh();
-		mesh.vertices = verticesArray;
-		mesh.triangles = trianglesArray;
-		mesh.RecalculateNormals();
-		meshFilter.mesh = mesh;
+        mesh = new Mesh();
+        mesh.vertices = verticesArray;
+        mesh.triangles = trianglesArray;
+        mesh.RecalculateNormals();
+        meshFilter.mesh = mesh;
 
-*/
+
 
 
 
@@ -214,7 +215,7 @@ public class TerrainGenerator : MonoBehaviour
     //    perlinNoise3DRT.format = RenderTextureFormat.ARGB32;
     //    perlinNoise3DRT.volumeDepth = 64;
     //    perlinNoise3DRT.Create();
-        
+
     //    ComputeBuffer perlinBuffer = new ComputeBuffer(64 * 64 * 64, sizeof(float));
     //    float[] perlinArray = new float[64 * 64 * 64];
 
@@ -262,7 +263,7 @@ public class TerrainGenerator : MonoBehaviour
     //}
 
 
-	private int[] TriangleTable = new int[256 * 16] {
+    private int[] TriangleTable = new int[256 * 16] {
 
 		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 		0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,

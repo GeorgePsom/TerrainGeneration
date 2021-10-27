@@ -41,6 +41,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 			int indexCurrentVertex = 3 * nPreviousPolys + i * 3 + tr;
 			_Vertices[indexCurrentVertex] = vertex;
 			_Triangles[indexCurrentVertex] = indexCurrentVertex;
+			edgeIndex++;
+
 		}
 	}
 	

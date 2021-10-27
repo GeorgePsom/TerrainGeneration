@@ -261,7 +261,7 @@ MonoBehaviour:
   numPolygonsCS: {fileID: 7200000, guid: 60ca73bdf588ae1449607ff6226f184c, type: 3}
   marchingCubesCS: {fileID: 7200000, guid: 7070d1ff41dfa2746b23ae4839c7fd30, type: 3}
   perlinNoise3D: {fileID: 11700000, guid: fb73c431cb4801649b96431b3bb57e51, type: 2}
-  TerrainSurface: 0
+  TerrainSurface: 0.5
 --- !u!23 &829063725
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -319,7 +319,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 829063723}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 224.61394, y: 124.59618, z: 490.6059}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
