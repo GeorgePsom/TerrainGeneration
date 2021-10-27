@@ -68,15 +68,15 @@ public class TerrainGenerator : MonoBehaviour
 
     void PopulateTerrainMap()
     {
-        int height = 32;
-        terrainMap = new float[65 * 65 * 65];
+        int height = 8;
+        terrainMap = new float[33 * 33 * 9];
         // The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger
         // than the width/height of our mesh.
-        for (int x = 0; x < 64 + 1; x++)
+        for (int x = 0; x <32 + 1; x++)
         {
-            for (int z = 0; z < 64 + 1; z++)
+            for (int z = 0; z < 32 + 1; z++)
             {
-                for (int y = 0; y < 64 + 1; y++)
+                for (int y = 0; y < 8 + 1; y++)
                 {
 
                     // Get a terrain height using regular old Perlin noise.
@@ -95,7 +95,7 @@ public class TerrainGenerator : MonoBehaviour
                         point = thisHeight - (float)y;
 
                     // Set the value of this point in the terrainMap.
-                    terrainMap[x + 65 * y + 65 * 65 *z] = point;
+                    terrainMap[z + 33 * y + 33 * 9 *x] = point;
 
                 }
             }
@@ -125,7 +125,7 @@ public class TerrainGenerator : MonoBehaviour
 
 
         // Compute number of polygons for each voxel
-        ComputeBuffer densityBuffer = new ComputeBuffer(65 * 65 * 65, sizeof(float));  
+        ComputeBuffer densityBuffer = new ComputeBuffer(33 * 33 * 9, sizeof(float));  
 		densityBuffer.SetData(terrainMap);
 
 		ComputeBuffer triangleTableBuffer = new ComputeBuffer(256*16, sizeof(int));
@@ -134,9 +134,9 @@ public class TerrainGenerator : MonoBehaviour
         numPolygonsCS.SetFloat("_TerrainSurface", TerrainSurface);
         numPolygonsCS.SetBuffer(0, "_TerrainMap", densityBuffer);
 
-        numPolysBuffer = new ComputeBuffer(64 * 64 * 64, sizeof(int));
+        numPolysBuffer = new ComputeBuffer(32 * 32 * 8, sizeof(int));
         numPolygonsCS.SetBuffer(0, "_NumOfPolygons", numPolysBuffer);
-        numPolygonsCS.Dispatch(0, 8, 8, 8);
+        numPolygonsCS.Dispatch(0, 4, 1, 4);
        
 		//int counts = 0;
    //     for (int i = 0; i < prefixSumArray.Length; i++)
@@ -152,16 +152,16 @@ public class TerrainGenerator : MonoBehaviour
 
 
         // Find the prefix sum of polygons
-        int iter = (int)System.Math.Ceiling(System.Math.Log(64 * 64 * 64, 2)) - 1;
+        int iter = (int)System.Math.Ceiling(System.Math.Log(32 * 32 * 8, 2)) - 1;
 
         for (int i = 0; i < iter + 1; i++)
         {
             prefixSumCS.SetBuffer(0, "_pSum", numPolysBuffer);
             prefixSumCS.SetInt("_iter", i);
-            prefixSumCS.Dispatch(0, 64 * 64 * 64 / 8, 1, 1);
+            prefixSumCS.Dispatch(0, 32 * 32, 1, 1);
 
         }
-        int[] prefixSumArray = new int[64 * 64 * 64];
+        int[] prefixSumArray = new int[32 * 32 * 8];
         numPolysBuffer.GetData(prefixSumArray);
 		int totalPolygs = prefixSumArray[prefixSumArray.Length - 1];
         //for (int i = 0; i < prefixSumArray.Length; i++)
@@ -188,7 +188,7 @@ public class TerrainGenerator : MonoBehaviour
         marchingCubesCS.SetFloat("_TerrainSurface", TerrainSurface);
         marchingCubesCS.SetBuffer(0, "_TerrainMap", densityBuffer);
         marchingCubesCS.SetBuffer(0, "_PrefixSumPolygons", numPolysBuffer);
-        marchingCubesCS.Dispatch(0, 8, 8, 8);
+        marchingCubesCS.Dispatch(0, 4, 1, 4);
 
         verticesBuffer.GetData(verticesArray);
         trianglesBuffer.GetData(trianglesArray);

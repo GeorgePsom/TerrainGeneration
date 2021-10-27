@@ -23,7 +23,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	int caseNum = GetCaseIndex(corner0123, corner4567, _TerrainSurface);
 	if (caseNum == 0 || caseNum == 255)
 		return;
-	int index1D = id.x + id.y * 64 + id.z * 64 * 64;
+	int index1D = id.z + id.y * 32 + id.x * 32 * 8;
 	
 	int edgeIndex = 0;
 	for (int i = 0; i < 5; i++)
