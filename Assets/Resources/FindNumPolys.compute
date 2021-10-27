@@ -1,7 +1,7 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 #pragma enable_d3d11_debug_symbols
-
+	
 #include "MarchingCubesVar.hlsl"
 #include "MarchingCubesInclude.hlsl"
 
@@ -26,7 +26,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	for (int j = 0; j < 16; j++)
 	{
 		
-		sum += (_TriangleTable[caseNum].triangles[j] > 0) ? 1 : 0;
+		sum += (_TriangleTable[caseNum * 16 + j] > 0) ? 1 : 0;
 	}
 	_NumOfPolygons[id.x + id.y * 64 + id.z * 64 * 64] = sum / 3;
 }

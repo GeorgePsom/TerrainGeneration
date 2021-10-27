@@ -30,7 +30,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 	{
 		for (int tr = 0; tr < 3; tr++)
 		{
-			int index = _TriangleTable[caseNum].triangles[edgeIndex];
+			int index = _TriangleTable[caseNum * 16 + edgeIndex];
 			if (index == -1)
 				return;
 

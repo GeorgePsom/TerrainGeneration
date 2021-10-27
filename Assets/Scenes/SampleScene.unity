@@ -261,7 +261,7 @@ MonoBehaviour:
   numPolygonsCS: {fileID: 7200000, guid: 60ca73bdf588ae1449607ff6226f184c, type: 3}
   marchingCubesCS: {fileID: 7200000, guid: 7070d1ff41dfa2746b23ae4839c7fd30, type: 3}
   perlinNoise3D: {fileID: 11700000, guid: fb73c431cb4801649b96431b3bb57e51, type: 2}
-  TerrainSurface: 0.5
+  TerrainSurface: 0
 --- !u!23 &829063725
 MeshRenderer:
   m_ObjectHideFlags: 0

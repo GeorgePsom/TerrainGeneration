@@ -1,22 +1,18 @@
-// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 #pragma enable_d3d11_debug_symbols
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-RWBuffer<int> pSum;
-
-int arraySize;
-int iterNum;
+RWBuffer<int> _pSum;
+int _iter;
 
 [numthreads(8,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    /**
-     * 1) Add neighbors one step away, copy rest
-     * 2) Add neighbors two steps away, copy rest
-     * 3) ...
-     **/
-    int index = id.x - pow(2, iterNum);
-    pSum[id.x] += pSum[index];
+    uint blockSize = 1 << _iter;
+    uint block = id.x / blockSize;
+    uint offset = id.x - block * blockSize;
+    block = 2 * block + 1;
+    uint index = block * blockSize + offset;
+    uint prevIndex = block * blockSize - 1;
+
+    _pSum[index] += _pSum[prevIndex];
 }

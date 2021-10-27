@@ -40,14 +40,14 @@ int GetCaseIndex(float4 corner0123, float4 corner4567, float terrainSurface)
 	int caseNum = 0;
 	
 	caseNum |= (corner0123.x > terrainSurface) ? 1 << 0 : 0 << 0;
-	caseNum |= (corner0123.y > terrainSurface) ? 1 << 1 : 0 << 0;
-	caseNum |= (corner0123.z > terrainSurface) ? 1 << 2 : 0 << 0;
-	caseNum |= (corner0123.w > terrainSurface) ? 1 << 3 : 0 << 0;
+	caseNum |= (corner0123.y > terrainSurface) ? 1 << 1 : 0 << 1;
+	caseNum |= (corner0123.z > terrainSurface) ? 1 << 2 : 0 << 2;
+	caseNum |= (corner0123.w > terrainSurface) ? 1 << 3 : 0 << 3;
 
-	caseNum |= (corner4567.x > terrainSurface) ? 1 << 4 : 0 << 0;
-	caseNum |= (corner4567.y > terrainSurface) ? 1 << 5 : 0 << 0;
-	caseNum |= (corner4567.z > terrainSurface) ? 1 << 6 : 0 << 0;
-	caseNum |= (corner4567.w > terrainSurface) ? 1 << 7 : 0 << 0;
+	caseNum |= (corner4567.x > terrainSurface) ? 1 << 4 : 0 << 4;
+	caseNum |= (corner4567.y > terrainSurface) ? 1 << 5 : 0 << 5;
+	caseNum |= (corner4567.z > terrainSurface) ? 1 << 6 : 0 << 6;
+	caseNum |= (corner4567.w > terrainSurface) ? 1 << 7 : 0 << 7;
 
 	return caseNum;
 }
