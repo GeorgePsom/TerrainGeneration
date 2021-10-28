@@ -45,7 +45,7 @@ public class TerrainGenerator : MonoBehaviour
     void Start()
     {
        
-        //GeneratePerlinNoise3D();
+        GeneratePerlinNoise3D();
 		meshFilter = GetComponent<MeshFilter>();
         MeshRenderer renderer = GetComponent<MeshRenderer>();
         renderer.receiveShadows = true;
@@ -104,8 +104,8 @@ public class TerrainGenerator : MonoBehaviour
 
     void Update()
     {
-        //PopulateTerrainMap();
-        //Generate();
+        PopulateTerrainMap();
+        Generate();
     }
     private void OnValidate()
     {
@@ -114,25 +114,25 @@ public class TerrainGenerator : MonoBehaviour
 
     private void Generate()
     {
-      
-      
-        //cs.SetTexture(0, "_Density", rt);
-        
-        //cs.SetInt("_Octaves", Octaves);
-        //cs.SetTexture(0, "_PerlinNoise", perlinNoise3DRT);
-        //cs.Dispatch(0, 8, 8, 8);
+
+
+        cs.SetTexture(0, "_Density", rt);
+
+        cs.SetInt("_Octaves", Octaves);
+        cs.SetTexture(0, "_PerlinNoise", perlinNoise3DRT);
+        cs.Dispatch(0, 8, 8, 8);
         //slicer.Save(rt, "Density");
 
 
         // Compute number of polygons for each voxel
-        ComputeBuffer densityBuffer = new ComputeBuffer(33 * 33 * 9, sizeof(float));  
-		densityBuffer.SetData(terrainMap);
+  //      ComputeBuffer densityBuffer = new ComputeBuffer(33 * 33 * 9, sizeof(float));  
+		//densityBuffer.SetData(terrainMap);
 
 		ComputeBuffer triangleTableBuffer = new ComputeBuffer(256*16, sizeof(int));
 		triangleTableBuffer.SetData(TriangleTable);
 		numPolygonsCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
         numPolygonsCS.SetFloat("_TerrainSurface", TerrainSurface);
-        numPolygonsCS.SetBuffer(0, "_TerrainMap", densityBuffer);
+        numPolygonsCS.SetTexture(0, "_TerrainMap", rt);
 
         numPolysBuffer = new ComputeBuffer(32 * 32 * 8, sizeof(int));
         numPolygonsCS.SetBuffer(0, "_NumOfPolygons", numPolysBuffer);
@@ -186,7 +186,7 @@ public class TerrainGenerator : MonoBehaviour
         marchingCubesCS.SetBuffer(0, "_Triangles", trianglesBuffer);
         marchingCubesCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
         marchingCubesCS.SetFloat("_TerrainSurface", TerrainSurface);
-        marchingCubesCS.SetBuffer(0, "_TerrainMap", densityBuffer);
+        marchingCubesCS.SetTexture(0, "_TerrainMap", rt);
         marchingCubesCS.SetBuffer(0, "_PrefixSumPolygons", numPolysBuffer);
         marchingCubesCS.Dispatch(0, 4, 1, 4);
 
@@ -205,62 +205,62 @@ public class TerrainGenerator : MonoBehaviour
 
     }
 
-    //private void GeneratePerlinNoise3D()
-    //{
+    private void GeneratePerlinNoise3D()
+    {
 
-    //    perlinNoise3DRT = new RenderTexture(64, 64, 0);
+        perlinNoise3DRT = new RenderTexture(64, 64, 0);
 
-    //    perlinNoise3DRT.enableRandomWrite = true;
-    //    perlinNoise3DRT.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-    //    perlinNoise3DRT.format = RenderTextureFormat.ARGB32;
-    //    perlinNoise3DRT.volumeDepth = 64;
-    //    perlinNoise3DRT.Create();
+        perlinNoise3DRT.enableRandomWrite = true;
+        perlinNoise3DRT.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+        perlinNoise3DRT.format = RenderTextureFormat.ARGB32;
+        perlinNoise3DRT.volumeDepth = 64;
+        perlinNoise3DRT.Create();
 
-    //    ComputeBuffer perlinBuffer = new ComputeBuffer(64 * 64 * 64, sizeof(float));
-    //    float[] perlinArray = new float[64 * 64 * 64];
+        ComputeBuffer perlinBuffer = new ComputeBuffer(64 * 64 * 64, sizeof(float));
+        float[] perlinArray = new float[64 * 64 * 64];
 
-    //    //// Configure the texture
-    //    int size = 64;
-    //    TextureFormat format = TextureFormat.RGBA32;
-    //    TextureWrapMode wrapMode = TextureWrapMode.Clamp;
+        //// Configure the texture
+        int size = 64;
+        TextureFormat format = TextureFormat.RGBA32;
+        TextureWrapMode wrapMode = TextureWrapMode.Clamp;
 
-    //    // Create the texture and apply the configuration
-    //    Texture3D texture = new Texture3D(size, size, size, format, false);
-    //    texture.wrapMode = wrapMode;
+        // Create the texture and apply the configuration
+        Texture3D texture = new Texture3D(size, size, size, format, false);
+        texture.wrapMode = wrapMode;
 
-    //    // Create a 3-dimensional array to store color data
-    //    Color[] colors = new Color[size * size * size];
+        // Create a 3-dimensional array to store color data
+        Color[] colors = new Color[size * size * size];
 
-    //    // Populate the array so that the x, y, and z values of the texture will map to red, blue, and green colors
-    //    float inverseResolution = 1.0f / (size - 1.0f);
-    //    for (int z = 0; z < size; z++)
-    //    {
-    //        int zOffset = z * size * size;
-    //        for (int y = 0; y < size; y++)
-    //        {
-    //            int yOffset = y * size;
-    //            for (int x = 0; x < size; x++)
-    //            {
-    //                float color = perlinNoiseGenerator.get3DPerlinNoise(new Vector3(x, y, z), 1.01f);
-    //                perlinArray[x + yOffset + zOffset] = color;
-    //                colors[x + yOffset + zOffset] = new Color(color, color, color);
-    //            }
-    //        }
-    //    }
+        // Populate the array so that the x, y, and z values of the texture will map to red, blue, and green colors
+        float inverseResolution = 1.0f / (size - 1.0f);
+        for (int z = 0; z < size; z++)
+        {
+            int zOffset = z * size * size;
+            for (int y = 0; y < size; y++)
+            {
+                int yOffset = y * size;
+                for (int x = 0; x < size; x++)
+                {
+                    float color = perlinNoiseGenerator.get3DPerlinNoise(new Vector3(x, y, z), 1.01f);
+                    perlinArray[x + yOffset + zOffset] = color;
+                    colors[x + yOffset + zOffset] = new Color(color, color, color);
+                }
+            }
+        }
 
-    //    // Copy the color values to the texture
-    //    texture.SetPixels(colors);
+        // Copy the color values to the texture
+        texture.SetPixels(colors);
 
-    //    // Apply the changes to the texture and upload the updated texture to the GPU
-    //    texture.Apply();
+        // Apply the changes to the texture and upload the updated texture to the GPU
+        texture.Apply();
 
-    //    // Save the texture to your Unity Project
-    //    AssetDatabase.CreateAsset(texture, "Assets/PerlinNoise3DTexture.asset");
-    //    perlinBuffer.SetData(perlinArray);
-    //    perlinNoiseCS.SetTexture(0, "_PerlinNoise3D", perlinNoise3DRT);
-    //    perlinNoiseCS.SetBuffer(0, "_PerlinNoiseBuffer", perlinBuffer);
-    //    perlinNoiseCS.Dispatch(0, 64 / 8, 64 / 8, 64 / 8);
-    //}
+        // Save the texture to your Unity Project
+        //AssetDatabase.CreateAsset(texture, "Assets/PerlinNoise3DTexture.asset");
+        perlinBuffer.SetData(perlinArray);
+        perlinNoiseCS.SetTexture(0, "_PerlinNoise3D", perlinNoise3DRT);
+        perlinNoiseCS.SetBuffer(0, "_PerlinNoiseBuffer", perlinBuffer);
+        perlinNoiseCS.Dispatch(0, 64 / 8, 64 / 8, 64 / 8);
+    }
 
 
     private int[] TriangleTable = new int[256 * 16] {
