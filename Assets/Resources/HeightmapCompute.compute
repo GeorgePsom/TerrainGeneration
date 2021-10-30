@@ -1,9 +1,10 @@
 #pragma enable_d3d11_debug_symbols
 #pragma kernel CSMain
-#include "Sampling.hlsl"
+//#include "Sampling.hlsl"
 
 RWTexture3D<float4> _Density;
 Texture3D<float4> _PerlinNoise;
+SamplerState MyLinearRepeatSampler;
 
 int _NoiseResolution;
 int _Octaves;
@@ -42,16 +43,16 @@ int _Octaves;
 float fbm(in float3 uvw) {
 	// Initial values
 	float value = 0.0;
-	float lacunarity = 2.0;
-	float gain = 0.5;
+	float lacunarity = 1.5;
+	float gain = 0.75;
 	//
 	// Initial values
-	float amplitude =1.0f;
-	float frequency = 3.;
+	float amplitude =2.0f;
+	float frequency = 1.;
 
 	// Loop of octaves
-	for (int i = 0; i < 5; i++) {
-		value += amplitude * (TrilinearSampling(_PerlinNoise, int3(64, 64, 64), frequency * uvw).r);
+	for (int i = 0; i < _Octaves; i++) {
+		value += amplitude * _PerlinNoise.SampleLevel(MyLinearRepeatSampler, frequency * uvw, 0);
 		frequency *= lacunarity;
 		amplitude *= gain;
 	}

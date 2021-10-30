@@ -58,8 +58,8 @@ public class TerrainGenerator : MonoBehaviour
         rt.format = RenderTextureFormat.ARGB32;
         rt.volumeDepth = 64;
         rt.Create();
-        PopulateTerrainMap();
-        Generate();
+		GenerateDensity();
+		Generate();
        
 
 
@@ -67,92 +67,71 @@ public class TerrainGenerator : MonoBehaviour
     }
 
 
-    void PopulateTerrainMap()
-    {
+    //void PopulateTerrainMap()
+    //{
        
-        terrainMap = new float[(xSize + 1) * (ySize + 1) * (zSize + 1)];
-        // The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger
-        // than the width/height of our mesh.
-        for (int x = 0; x < xSize + 1; x++)
-        {
-            for (int z = 0; z < zSize + 1; z++)
-            {
-                for (int y = 0; y < ySize + 1; y++)
-                {
+    //    terrainMap = new float[(xSize + 1) * (ySize + 1) * (zSize + 1)];
+    //    // The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger
+    //    // than the width/height of our mesh.
+    //    for (int x = 0; x < xSize + 1; x++)
+    //    {
+    //        for (int z = 0; z < zSize + 1; z++)
+    //        {
+    //            for (int y = 0; y < ySize + 1; y++)
+    //            {
 
-                    // Get a terrain height using regular old Perlin noise.
-                    float thisHeight = (float)ySize * Mathf.PerlinNoise((float)x / 16f * 1.5f + 0.001f, (float)z / 16f * 1.5f + 0.001f);
+    //                // Get a terrain height using regular old Perlin noise.
+    //                float thisHeight = (float)ySize * Mathf.PerlinNoise((float)x / 16f * 1.5f + 0.001f, (float)z / 16f * 1.5f + 0.001f);
 
-                    float point = 0;
-                    // We're only interested when point is within 0.5f of terrain surface. More than 0.5f less and it is just considered
-                    // solid terrain, more than 0.5f above and it is just air. Within that range, however, we want the exact value.
-                    if (y <= thisHeight - 0.5f)
-                        point = 0f;
-                    else if (y > thisHeight + 0.5f)
-                        point = 1f;
-                    else if (y > thisHeight)
-                        point = (float)y - thisHeight;
-                    else
-                        point = thisHeight - (float)y;
+    //                float point = 0;
+    //                // We're only interested when point is within 0.5f of terrain surface. More than 0.5f less and it is just considered
+    //                // solid terrain, more than 0.5f above and it is just air. Within that range, however, we want the exact value.
+    //                if (y <= thisHeight - 0.5f)
+    //                    point = 0f;
+    //                else if (y > thisHeight + 0.5f)
+    //                    point = 1f;
+    //                else if (y > thisHeight)
+    //                    point = (float)y - thisHeight;
+    //                else
+    //                    point = thisHeight - (float)y;
 
-                    // Set the value of this point in the terrainMap.
-                    terrainMap[z + (zSize + 1) * y + (zSize + 1) * (ySize + 1) * x] = point;
+    //                // Set the value of this point in the terrainMap.
+    //                terrainMap[z + (zSize + 1) * y + (zSize + 1) * (ySize + 1) * x] = point;
 
-                }
-            }
-        }
-    }
+    //            }
+    //        }
+    //    }
+    //}
 
     void Update()
     {
-        //PopulateTerrainMap();
+        //GenerateDensity();
+        ////PopulateTerrainMap();
         //Generate();
-    }
-    private void OnValidate()
-    {
-        //Generate();
-    }
 
+    }
+   
+	private void GenerateDensity()
+    {
+		cs.SetTexture(0, "_Density", rt);
+		cs.SetInt("_Octaves", Octaves);
+		cs.SetTexture(0, "_PerlinNoise", perlinNoise3DRT);
+		cs.Dispatch(0, 8, 8, 8);
+		slicer.Save(rt, "Density");
+	}
     private void Generate()
     {
-
-
-        //cs.SetTexture(0, "_Density", rt);
-
-        //cs.SetInt("_Octaves", Octaves);
-        //cs.SetTexture(0, "_PerlinNoise", perlinNoise3DRT);
-        //cs.Dispatch(0, 8, 8, 8);
-        //slicer.Save(rt, "Density");
-
-
-        //Compute number of polygons for each voxel
-
-       ComputeBuffer densityBuffer = new ComputeBuffer((xSize + 1) * (zSize + 1) * (ySize + 1), sizeof(float));
-        densityBuffer.SetData(terrainMap);
 
         ComputeBuffer triangleTableBuffer = new ComputeBuffer(256*16, sizeof(int));
 		triangleTableBuffer.SetData(TriangleTable);
 		numPolygonsCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
         numPolygonsCS.SetFloat("_TerrainSurface", TerrainSurface);
-        numPolygonsCS.SetBuffer(0, "_TerrainMap", densityBuffer);
+        numPolygonsCS.SetTexture(0, "_TerrainMap", rt);
 		numPolygonsCS.SetVector("_Dims", new Vector4(xSize, ySize, zSize));
-
         numPolysBuffer = new ComputeBuffer(xSize * ySize * zSize, sizeof(int));
         numPolygonsCS.SetBuffer(0, "_NumOfPolygons", numPolysBuffer);
         numPolygonsCS.Dispatch(0, xSize / 8, ySize / 8, zSize / 8);
 		
-        //int counts = 0;
-        //     for (int i = 0; i < prefixSumArray.Length; i++)
-        //     {
-        //if(prefixSumArray[i] > 0)
-        //         {
-        //	counts++;
-        //	Debug.Log("Voxel: " + i + "  polysAccum: " + prefixSumArray[i]);
-        //}
-        //Debug.Log("Counts :  " + counts);
-
-        //     }
-
 
         // Find the prefix sum of polygons
         int iter = (int)System.Math.Ceiling(System.Math.Log(xSize * ySize * zSize, 2)) - 1;
@@ -168,15 +147,8 @@ public class TerrainGenerator : MonoBehaviour
         int[] prefixSumArray = new int[xSize * ySize * zSize];
         numPolysBuffer.GetData(prefixSumArray);
         int totalPolygs = prefixSumArray[prefixSumArray.Length - 1];
-        //for (int i = 0; i < prefixSumArray.Length; i++)
-        //{
-        //    Debug.Log("Voxel: " + i + "  polysAccum: " + prefixSumArray[i]);
-        //}
-
-
-
-
-        // March cubes
+       
+        // March cubes	
         
         ComputeBuffer verticesBuffer = new ComputeBuffer(3 * totalPolygs, 3 * sizeof(float));
         Vector3[] verticesArray = new Vector3[3 * totalPolygs];
@@ -187,7 +159,7 @@ public class TerrainGenerator : MonoBehaviour
         marchingCubesCS.SetBuffer(0, "_Triangles", trianglesBuffer);
         marchingCubesCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
         marchingCubesCS.SetFloat("_TerrainSurface", TerrainSurface);
-        marchingCubesCS.SetBuffer(0, "_TerrainMap", densityBuffer);
+        marchingCubesCS.SetTexture(0, "_TerrainMap", rt);
         marchingCubesCS.SetBuffer(0, "_PrefixSumPolygons", numPolysBuffer);
         marchingCubesCS.Dispatch(0, xSize / 8, ySize / 8, zSize / 8);
 
@@ -200,11 +172,16 @@ public class TerrainGenerator : MonoBehaviour
         mesh.RecalculateNormals();
         meshFilter.mesh = mesh;
 
+		triangleTableBuffer.Release();
+		numPolysBuffer.Release();
+		verticesBuffer.Release();
+		trianglesBuffer.Release();
+		
 
 
 
 
-    }
+	}
 
     private void GeneratePerlinNoise3D()
     {
