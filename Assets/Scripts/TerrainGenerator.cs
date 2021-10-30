@@ -10,30 +10,52 @@ public class TerrainGenerator : MonoBehaviour
     public int xSize, ySize, zSize;
     public float Scale;
 
-    public bool generate3DNoise = false;
+    //public bool generate3DNoise = false;
     
-    public Slicer slicer;
-    public perlinNoiseGenerator noiseGenerator;
-    public int Octaves;
+    //public Slicer slicer;
+    //public perlinNoiseGenerator noiseGenerator;
+    //public int Octaves;
     
-    public ComputeShader cs;
+    public ComputeShader densityShader;
     public ComputeShader perlinNoiseCS;
     public ComputeShader prefixSumCS;
     public ComputeShader numPolygonsCS;
 	public ComputeShader marchingCubesCS;
 
-    private RenderTexture rt;
-    public Texture3D perlinNoise3D;
-	private ComputeBuffer perlinNoiseBuffer;
-    private RenderTexture perlinNoise3DRT;
-
-    public float TerrainSurface = 0.5f;
-    private float[] terrainMap;
+    //private RenderTexture rt;
+    //public Texture3D perlinNoise3D;
+	//private ComputeBuffer perlinNoiseBuffer;
+ //   private RenderTexture perlinNoise3DRT;
     private ComputeBuffer numPolysBuffer;
+
+	[Header("Noise")]
+	public int seed;
+	public int numOctaves = 4;
+	public float lacunarity = 2;
+	public float persistence = 0.5f;
+	public float noiseScale = 1;
+	public float noiseWeight = 1.0f;
+	public bool closeEdges;
+	public float floorOffset = 1;
+	public float weightMultiplier = 1;
+	public float hardFloorHeight;
+	public float hardFloorWeight;
+	public Vector4 shaderParams;
+
+	[Header("World")]
+	public float isoLevel;
+	public float boundsSize = 1;
+	public Vector3 offset = Vector3.zero;
+
+	[Range(2, 10000)]
+	public int numPointsPerAxis = 30;
 
 	private MeshFilter meshFilter;
 	private Mesh mesh;
 	private Material mat;
+
+
+	private ComputeBuffer pointsBuffer;
 	private void Awake()
     {
         
@@ -46,18 +68,18 @@ public class TerrainGenerator : MonoBehaviour
     void Start()
     {
        
-        GeneratePerlinNoise3D();
+        //GeneratePerlinNoise3D();
 		meshFilter = GetComponent<MeshFilter>();
         MeshRenderer renderer = GetComponent<MeshRenderer>();
         renderer.receiveShadows = true;
         mat = renderer.material;
        
-        rt = new RenderTexture(64, 64, 0);
-        rt.enableRandomWrite = true;
-        rt.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
-        rt.format = RenderTextureFormat.ARGB32;
-        rt.volumeDepth = 64;
-        rt.Create();
+        //rt = new RenderTexture(64, 64, 0);
+        //rt.enableRandomWrite = true;
+        //rt.dimension = UnityEngine.Rendering.TextureDimension.Tex3D;
+        //rt.format = RenderTextureFormat.ARGB32;
+        //rt.volumeDepth = 64;
+        //rt.Create();
 		GenerateDensity();
 		Generate();
        
@@ -105,32 +127,80 @@ public class TerrainGenerator : MonoBehaviour
 
     void Update()
     {
-        //GenerateDensity();
-        ////PopulateTerrainMap();
-        //Generate();
-
-    }
+		GenerateDensity();
+		
+	}
    
 	private void GenerateDensity()
     {
-		cs.SetTexture(0, "_Density", rt);
-		cs.SetInt("_Octaves", Octaves);
-		cs.SetTexture(0, "_PerlinNoise", perlinNoise3DRT);
-		cs.Dispatch(0, 8, 8, 8);
-		slicer.Save(rt, "Density");
+		//cs.SetTexture(0, "_Density", rt);
+		//cs.SetInt("_Octaves", Octaves);
+		//cs.SetTexture(0, "_PerlinNoise", perlinNoise3DRT);
+		//cs.Dispatch(0, 8, 8, 8);
+		//slicer.Save(rt, "Density");
+		int numPoints = numPointsPerAxis * numPointsPerAxis * numPointsPerAxis;
+
+		int numVoxelsPerAxis = numPointsPerAxis - 1;
+		int numThreadsPerAxis = Mathf.CeilToInt(numPointsPerAxis / (float)8);
+		float pointSpacing = boundsSize / (numPointsPerAxis - 1);
+
+		pointsBuffer = new ComputeBuffer(numPoints, sizeof(float) * 4);
+
+		// Noise parameters
+		var prng = new System.Random(seed);
+		var offsets = new Vector3[numOctaves];
+		float offsetRange = 1000;
+		for (int i = 0; i < numOctaves; i++)
+		{
+			offsets[i] = new Vector3((float)prng.NextDouble() * 2 - 1, (float)prng.NextDouble() * 2 - 1, (float)prng.NextDouble() * 2 - 1) * offsetRange;
+		}
+		var offsetsBuffer = new ComputeBuffer(offsets.Length, sizeof(float) * 3);
+		offsetsBuffer.SetData(offsets);
+		densityShader.SetBuffer(0, "_points", pointsBuffer);
+		densityShader.SetFloat("_numPointsPerAxis", numPointsPerAxis);
+		densityShader.SetFloat("_isoLevel", isoLevel);
+		Vector3 center = Vector3.zero;
+		Vector3 worldBounds = Vector3.one * boundsSize;
+		densityShader.SetVector("_centre", new Vector4(center.x, center.y, center.z));
+		densityShader.SetFloat("_boundsSize", boundsSize);
+		densityShader.SetVector("_offset", new Vector4(offset.x, offset.y, offset.z));
+		densityShader.SetFloat("_spacing", pointSpacing);
+		densityShader.SetVector("worldSize", worldBounds);
+		densityShader.SetFloat("_octaves", Mathf.Max(1, numOctaves));
+		densityShader.SetFloat("_lacunarity", lacunarity);
+		densityShader.SetFloat("_persistence", persistence);
+		densityShader.SetFloat("_noiseScale", noiseScale);
+		densityShader.SetFloat("_noiseWeight", noiseWeight);
+		densityShader.SetBool("_closeEdges", closeEdges);
+		densityShader.SetBuffer(0, "_offsets", offsetsBuffer);
+		densityShader.SetFloat("_floorOffset", floorOffset);
+		densityShader.SetFloat("_weightMultiplier", weightMultiplier);
+		densityShader.SetFloat("_hardFloor", hardFloorHeight);
+		densityShader.SetFloat("_hardFloorWeight", hardFloorWeight);
+		densityShader.SetVector("_params", shaderParams);
+		densityShader.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
+
+
 	}
+	
     private void Generate()
     {
+		int numPoints = numPointsPerAxis * numPointsPerAxis * numPointsPerAxis;
 
-        ComputeBuffer triangleTableBuffer = new ComputeBuffer(256*16, sizeof(int));
+		int numVoxelsPerAxis = numPointsPerAxis - 1;
+		int numThreadsPerAxis = Mathf.CeilToInt(numVoxelsPerAxis / (float)8);
+		float pointSpacing = boundsSize / (numPointsPerAxis - 1);
+
+		ComputeBuffer triangleTableBuffer = new ComputeBuffer(256*16, sizeof(int));
 		triangleTableBuffer.SetData(TriangleTable);
 		numPolygonsCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
-        numPolygonsCS.SetFloat("_TerrainSurface", TerrainSurface);
-        numPolygonsCS.SetTexture(0, "_TerrainMap", rt);
-		numPolygonsCS.SetVector("_Dims", new Vector4(xSize, ySize, zSize));
-        numPolysBuffer = new ComputeBuffer(xSize * ySize * zSize, sizeof(int));
+        numPolygonsCS.SetFloat("_isoLevel", isoLevel);
+		numPolygonsCS.SetFloat("_numPointsPerAxis", numPointsPerAxis);
+		numPolygonsCS.SetBuffer(0, "_points", pointsBuffer);
+		
+        numPolysBuffer = new ComputeBuffer(numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis, sizeof(int));
         numPolygonsCS.SetBuffer(0, "_NumOfPolygons", numPolysBuffer);
-        numPolygonsCS.Dispatch(0, xSize / 8, ySize / 8, zSize / 8);
+        numPolygonsCS.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
 		
 
         // Find the prefix sum of polygons
@@ -139,12 +209,13 @@ public class TerrainGenerator : MonoBehaviour
         for (int i = 0; i < iter + 1; i++)
         {
             prefixSumCS.SetBuffer(0, "_pSum", numPolysBuffer);
-            prefixSumCS.SetInt("_iter", i);
-			prefixSumCS.SetVector("_Dims", new Vector4(xSize, ySize, zSize));
-			prefixSumCS.Dispatch(0, xSize  / 8, ySize / 8, zSize / 8);
+			prefixSumCS.SetFloat("_isoLevel", isoLevel);
+			prefixSumCS.SetFloat("_numPointsPerAxis", numPointsPerAxis);
+			prefixSumCS.SetInt("_iter", i);
+			prefixSumCS.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
 
         }
-        int[] prefixSumArray = new int[xSize * ySize * zSize];
+        int[] prefixSumArray = new int[numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis];
         numPolysBuffer.GetData(prefixSumArray);
         int totalPolygs = prefixSumArray[prefixSumArray.Length - 1];
        
@@ -154,14 +225,15 @@ public class TerrainGenerator : MonoBehaviour
         Vector3[] verticesArray = new Vector3[3 * totalPolygs];
         ComputeBuffer trianglesBuffer = new ComputeBuffer(3 * totalPolygs, sizeof(int));
         int[] trianglesArray = new int[3 * totalPolygs];
-		marchingCubesCS.SetVector("_Dims", new Vector4(xSize, ySize, zSize));
+		
 		marchingCubesCS.SetBuffer(0, "_Vertices", verticesBuffer);
         marchingCubesCS.SetBuffer(0, "_Triangles", trianglesBuffer);
         marchingCubesCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
-        marchingCubesCS.SetFloat("_TerrainSurface", TerrainSurface);
-        marchingCubesCS.SetTexture(0, "_TerrainMap", rt);
-        marchingCubesCS.SetBuffer(0, "_PrefixSumPolygons", numPolysBuffer);
-        marchingCubesCS.Dispatch(0, xSize / 8, ySize / 8, zSize / 8);
+        marchingCubesCS.SetFloat("_isoLevel", isoLevel);
+		marchingCubesCS.SetBuffer(0, "_points", pointsBuffer);
+		marchingCubesCS.SetFloat("_numPointsPerAxis", numPointsPerAxis);
+		marchingCubesCS.SetBuffer(0, "_PrefixSumPolygons", numPolysBuffer);
+        marchingCubesCS.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
 
         verticesBuffer.GetData(verticesArray);
         trianglesBuffer.GetData(trianglesArray);
@@ -182,7 +254,7 @@ public class TerrainGenerator : MonoBehaviour
 
 
 	}
-
+	/*
     private void GeneratePerlinNoise3D()
     {
 
@@ -239,7 +311,7 @@ public class TerrainGenerator : MonoBehaviour
         perlinNoiseCS.SetBuffer(0, "_PerlinNoiseBuffer", perlinBuffer);
         perlinNoiseCS.Dispatch(0, 64 / 8, 64 / 8, 64 / 8);
     }
-
+	*/
 
     private int[] TriangleTable = new int[256 * 16] {
 

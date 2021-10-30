@@ -5,10 +5,14 @@
 RWBuffer<int> _pSum;
 int _iter;
 
+int indexFromCoord(int x, int y, int z) {
+    return z * (int)_numPointsPerAxis * (int)_numPointsPerAxis + y * (int)_numPointsPerAxis + x;
+}
+
 [numthreads(8,8,8)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    uint i = id.z + _Dims.z * id.y + _Dims.y * _Dims.z * id.x;
+    uint i = indexFromCoord(id.x, id.y, id.z);
     uint blockSize = 1 << _iter;
     uint block = i / blockSize;
     uint offset = i - block * blockSize;

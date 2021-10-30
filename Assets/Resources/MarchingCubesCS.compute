@@ -11,19 +11,56 @@ RWStructuredBuffer<float3> _Vertices;
 RWStructuredBuffer<int> _Triangles;
 StructuredBuffer<int> _PrefixSumPolygons;
 
-float _TerrainSurface;
+
+
+float3 interpolateVerts(float4 v1, float4 v2) {
+	float t = (_isoLevel - v1.w) / (v2.w - v1.w);
+	return v1.xyz + t * (v2.xyz - v1.xyz);
+}
+
+
 
 [numthreads(8,8,8)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-	float4 corner0123;
-	float4 corner4567;
-	getVoxelCorners(int3(id.xyz), corner0123, corner4567);
+	// Stop one point before the end because voxel includes neighbouring points
+	if (id.x >= (int)_numPointsPerAxis - 1 || id.y >= (int)_numPointsPerAxis - 1 ||
+		id.z >= (int)_numPointsPerAxis - 1) {
+		return;
+	}
 
-	int caseNum = GetCaseIndex(corner0123, corner4567, _TerrainSurface);
+	float4 corner0;
+	float4 corner1;
+	float4 corner2;
+	float4 corner3;
+	float4 corner4;
+	float4 corner5;
+	float4 corner6;
+	float4 corner7;
+	getVoxelCorners(int3(id.xyz),   corner0,   corner1,
+		  corner2,   corner3,
+		  corner4,   corner5,
+		  corner6,   corner7);
+
+	int caseNum = GetCaseIndex( corner0,  corner1,
+		 corner2,  corner3,
+		 corner4,  corner5,
+		 corner6,  corner7);
+
+	float4 cubeCorners[8] = {
+		corner0,
+		corner1,
+		corner2,
+		corner3,
+		corner4,
+		corner5,
+		corner6,
+		corner7
+	};
+
 	if (caseNum == 0 || caseNum == 255)
 		return;
-	int index1D = id.z + id.y * _Dims.z + id.x * _Dims.z * _Dims.y;
+	int index1D = indexFromCoord(id.x, id.y, id.z);
 	
 	int edgeIndex = 0;
 	for (int i = 0; i < 5; i++)
@@ -33,13 +70,15 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 			int index = _TriangleTable[caseNum * 16 + edgeIndex];
 			if (index == -1)
 				return;
-
-			float3 vert1 = float3(id.xyz) + EdgeTable[index][0];
+			int a0 = cornerIndexAFromEdge[index];
+			int b0 = cornerIndexBFromEdge[index];
+			/*float3 vert1 = float3(id.xyz) + EdgeTable[index][0];
 			float3 vert2 = float3(id.xyz) + EdgeTable[index][1];
-			float3 vertex = (vert1 + vert2) / 2.0f.xxx;
+			float3 vertex = (vert1 + vert2) / 2.0f.xxx;*/
+			
 			int nPreviousPolys = index1D > 0 ? _PrefixSumPolygons[index1D - 1] : 0;
 			int indexCurrentVertex = 3 * nPreviousPolys + i * 3 + tr;
-			_Vertices[indexCurrentVertex] = vertex;
+			_Vertices[indexCurrentVertex] = interpolateVerts(cubeCorners[a0], cubeCorners[b0]);
 			_Triangles[indexCurrentVertex] = indexCurrentVertex;
 			edgeIndex++;
 

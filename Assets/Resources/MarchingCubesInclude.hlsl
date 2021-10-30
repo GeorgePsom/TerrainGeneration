@@ -16,6 +16,36 @@ static int3 CornerTable[8] =
 
 };
 
+static const int cornerIndexAFromEdge[12] = {
+	0,
+	1,
+	2,
+	3,
+	4,
+	5,
+	6,
+	7,
+	0,
+	1,
+	2,
+	3
+};
+
+static const int cornerIndexBFromEdge[12] = {
+	1,
+	2,
+	3,
+	0,
+	5,
+	6,
+	7,
+	4,
+	4,
+	5,
+	6,
+	7
+};
+
 static float3 EdgeTable[12][2] = 
 {
 
@@ -34,26 +64,42 @@ static float3 EdgeTable[12][2] =
 
 };
 
-
-int GetCaseIndex(float4 corner0123, float4 corner4567, float terrainSurface)
-{
-	int caseNum = 0;
-	
-	caseNum |= (corner0123.x > terrainSurface) ? 1 << 0 : 0 << 0;
-	caseNum |= (corner0123.y > terrainSurface) ? 1 << 1 : 0 << 1;
-	caseNum |= (corner0123.z > terrainSurface) ? 1 << 2 : 0 << 2;
-	caseNum |= (corner0123.w > terrainSurface) ? 1 << 3 : 0 << 3;
-
-	caseNum |= (corner4567.x > terrainSurface) ? 1 << 4 : 0 << 4;
-	caseNum |= (corner4567.y > terrainSurface) ? 1 << 5 : 0 << 5;
-	caseNum |= (corner4567.z > terrainSurface) ? 1 << 6 : 0 << 6;
-	caseNum |= (corner4567.w > terrainSurface) ? 1 << 7 : 0 << 7;
-
-	return caseNum;
+int indexFromCoord(int x, int y, int z) {
+	return z * (int)_numPointsPerAxis * (int)_numPointsPerAxis + y * (int)_numPointsPerAxis + x;
 }
-void getVoxelCorners(int3 voxel, out float4 corner0123, out float4 corner4567)
+int GetCaseIndex(float4 corner0,  float4 corner1,
+	 float4 corner2,  float4 corner3,
+	 float4 corner4,  float4 corner5,
+	 float4 corner6,  float4 corner7)
 {
-	float cube[8];
+	int cubeIndex = 0;
+	if (corner0.w < _isoLevel) cubeIndex |= 1;
+	if (corner1.w < _isoLevel) cubeIndex |= 2;
+	if (corner2.w < _isoLevel) cubeIndex |= 4;
+	if (corner3.w < _isoLevel) cubeIndex |= 8;
+	if (corner4.w < _isoLevel) cubeIndex |= 16;
+	if (corner5.w < _isoLevel) cubeIndex |= 32;
+	if (corner6.w < _isoLevel) cubeIndex |= 64;
+	if (corner7.w < _isoLevel) cubeIndex |= 128;
+	return cubeIndex;
+}
+void getVoxelCorners(int3 id,
+	out float4 corner0, out float4 corner1,
+	out float4 corner2, out float4 corner3,
+	out float4 corner4, out float4 corner5,
+	out float4 corner6, out float4 corner7)
+{
+	corner0 = _points[indexFromCoord(id.x, id.y, id.z)];
+	corner1 = _points[indexFromCoord(id.x + 1, id.y, id.z)];
+	corner2 = _points[indexFromCoord(id.x + 1, id.y, id.z + 1)];
+	corner3 = _points[indexFromCoord(id.x, id.y, id.z + 1)];
+	corner4 = _points[indexFromCoord(id.x, id.y + 1, id.z)];
+	corner5 = _points[indexFromCoord(id.x + 1, id.y + 1, id.z)];
+	corner6 = _points[indexFromCoord(id.x + 1, id.y + 1, id.z + 1)];
+	corner7 = _points[indexFromCoord(id.x, id.y + 1, id.z + 1)];
+
+}
+	/*float cube[8];
 	
 	for (int i = 0; i < 8; i++)
 	{
@@ -63,7 +109,7 @@ void getVoxelCorners(int3 voxel, out float4 corner0123, out float4 corner4567)
 	}
 	corner0123 = float4(cube[0], cube[1], cube[2], cube[3]);
 	corner4567 = float4(cube[4], cube[5], cube[6], cube[7]);
-}
+}*/
 
 
 

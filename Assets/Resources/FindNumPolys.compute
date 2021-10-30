@@ -8,7 +8,11 @@
 
 
 RWStructuredBuffer<int> _NumOfPolygons;
-float _TerrainSurface;
+
+
+
+
+
 
 
 
@@ -16,17 +20,29 @@ float _TerrainSurface;
 [numthreads(8,8,8)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-	float4 corner0123;
-	float4 corner4567;
-	getVoxelCorners(int3(id.xyz), corner0123, corner4567);
+	float4 corner0;
+	float4 corner1;
+	float4 corner2;
+	float4 corner3;
+	float4 corner4;
+	float4 corner5;
+	float4 corner6;
+	float4 corner7;
+	getVoxelCorners(int3(id.xyz),   corner0,   corner1,
+		  corner2,   corner3,
+		  corner4,   corner5,
+		  corner6,   corner7);
 
-	int caseNum = GetCaseIndex(corner0123, corner4567, _TerrainSurface);
-	
+	int caseNum = GetCaseIndex(corner0, corner1,
+		corner2, corner3,
+		corner4, corner5,
+		corner6, corner7);
+
 	int sum = 0;
 	for (int j = 0; j < 16; j++)
 	{
 		
 		sum += (_TriangleTable[caseNum * 16 + j] >= 0) ? 1 : 0;
 	}
-	_NumOfPolygons[id.z + id.y * _Dims.z + id.x * _Dims.z * _Dims.y] = sum / 3;
+	_NumOfPolygons[indexFromCoord(id.x, id.y, id.z)] = sum / 3;
 }
