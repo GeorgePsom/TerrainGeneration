@@ -1,15 +1,17 @@
 #pragma kernel CSMain
 #pragma enable_d3d11_debug_symbols
+#include "MarchingCubesVar.hlsl"
 
 RWBuffer<int> _pSum;
 int _iter;
 
-[numthreads(8,1,1)]
+[numthreads(8,8,8)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+    uint i = id.z + _Dims.z * id.y + _Dims.y * _Dims.z * id.x;
     uint blockSize = 1 << _iter;
-    uint block = id.x / blockSize;
-    uint offset = id.x - block * blockSize;
+    uint block = i / blockSize;
+    uint offset = i - block * blockSize;
     block = 2 * block + 1;
     uint index = block * blockSize + offset;
     uint prevIndex = block * blockSize - 1;

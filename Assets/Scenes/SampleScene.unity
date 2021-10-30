@@ -248,8 +248,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b9dbf4ed27c9b3409f88debf09d4c38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xSize: 4
-  ySize: 4
+  xSize: 32
+  ySize: 8
+  zSize: 32
   Scale: 0.5
   generate3DNoise: 0
   slicer: {fileID: 829063728}
@@ -261,7 +262,7 @@ MonoBehaviour:
   numPolygonsCS: {fileID: 7200000, guid: 60ca73bdf588ae1449607ff6226f184c, type: 3}
   marchingCubesCS: {fileID: 7200000, guid: 7070d1ff41dfa2746b23ae4839c7fd30, type: 3}
   perlinNoise3D: {fileID: 11700000, guid: fb73c431cb4801649b96431b3bb57e51, type: 2}
-  TerrainSurface: 0.5
+  TerrainSurface: 0.05
 --- !u!23 &829063725
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -338,9 +339,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slicer: {fileID: 7200000, guid: 597492da21636d34baa5dc5eaf838b96, type: 3}
-  resolutionz: 64
-  resolutionx: 64
-  resolutiony: 64
+  resolutionz: 16
+  resolutionx: 16
+  resolutiony: 16
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0

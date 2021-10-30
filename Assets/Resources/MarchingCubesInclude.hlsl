@@ -1,7 +1,7 @@
 #ifndef MARCHING_CUBES_INCLUDED
 #define MARCHING_CUBES_INCLUDED
 
-
+#include "Sampling.hlsl"
 static int3 CornerTable[8] = 
 {
 
@@ -58,8 +58,8 @@ void getVoxelCorners(int3 voxel, out float4 corner0123, out float4 corner4567)
 	for (int i = 0; i < 8; i++)
 	{
 		int3 corner = voxel + CornerTable[i];
-		float3 uvw = float3(corner.x * 64.0f / 33.0f, corner.y * 64.0f / 9.0f, corner.z * 64.0f / 33.0f);
-		cube[i] = _TerrainMap[uvw].r;
+		float3 uvw = float3( (float)corner.x  / 33.0f, (float)corner.y  / 9.0f, (float)corner.z / 33.0f);
+		cube[i] =  _TerrainMap[corner.z + corner.y * (_Dims.z + 1) + corner.x * (_Dims.z + 1) * (_Dims.y + 1)]; /*TrilinearSampling(_TerrainMap, int3(64, 64, 64), uvw).r;*/
 	}
 	corner0123 = float4(cube[0], cube[1], cube[2], cube[3]);
 	corner4567 = float4(cube[4], cube[5], cube[6], cube[7]);

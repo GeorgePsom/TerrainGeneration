@@ -1,6 +1,6 @@
 #pragma enable_d3d11_debug_symbols
 #pragma kernel CSMain
-
+#include "Sampling.hlsl"
 
 RWTexture3D<float4> _Density;
 Texture3D<float4> _PerlinNoise;
@@ -12,44 +12,48 @@ int _Octaves;
 #define INV_LATTICE_SIZE (1.0/(float)(NOISE_LATTICE_SIZE))
 
 
-float4 BilinearSampling(in Texture2D<float4> inputText, in float2 uv)
-{
-	float4 result;
-	const float2 pixelCoord = uv.xy * float2(_NoiseResolution, _NoiseResolution);
-	float2 pixelCoordCenters = pixelCoord - 0.5;
+//float4 BilinearSampling(in Texture2D<float4> inputText, in float2 uv)
+//{
+//	float4 result;
+//	const float2 pixelCoord = uv.xy * float2(_NoiseResolution, _NoiseResolution);
+//	float2 pixelCoordCenters = pixelCoord - 0.5;
+//
+//	pixelCoordCenters = clamp(pixelCoordCenters, 0.0, float2(_NoiseResolution, _NoiseResolution) - 1.0);
+//
+//	const uint2 pixelCoordCentersBotLeft = floor(pixelCoordCenters);
+//	
+//	const float2 pixelCoordCentersFrac = frac(pixelCoordCenters);
+//
+//	const float4 dataBotLeft = inputText[uint2(pixelCoordCentersBotLeft)];
+//	const float4 dataBotRight = inputText[uint2(pixelCoordCentersBotLeft + uint2(1, 0))];
+//	const float4 dataTopLeft = inputText[uint2(pixelCoordCentersBotLeft + uint2(0, 1))];
+//	const float4 dataTopRight = inputText[uint2(pixelCoordCentersBotLeft + uint2(1, 1))];
+//
+//	const float4 dataLerped = lerp(
+//		lerp(dataBotLeft, dataBotRight, pixelCoordCentersFrac.x),
+//		lerp(dataTopLeft, dataTopRight, pixelCoordCentersFrac.x),
+//		pixelCoordCentersFrac.y
+//	);
+//	result = dataLerped.xyzw;
+//	return result;
+//
+//}
 
-	pixelCoordCenters = clamp(pixelCoordCenters, 0.0, float2(_NoiseResolution, _NoiseResolution) - 1.0);
-
-	const uint2 pixelCoordCentersBotLeft = floor(pixelCoordCenters);
-	
-	const float2 pixelCoordCentersFrac = frac(pixelCoordCenters);
-
-	const float4 dataBotLeft = inputText[uint2(pixelCoordCentersBotLeft)];
-	const float4 dataBotRight = inputText[uint2(pixelCoordCentersBotLeft + uint2(1, 0))];
-	const float4 dataTopLeft = inputText[uint2(pixelCoordCentersBotLeft + uint2(0, 1))];
-	const float4 dataTopRight = inputText[uint2(pixelCoordCentersBotLeft + uint2(1, 1))];
-
-	const float4 dataLerped = lerp(
-		lerp(dataBotLeft, dataBotRight, pixelCoordCentersFrac.x),
-		lerp(dataTopLeft, dataTopRight, pixelCoordCentersFrac.x),
-		pixelCoordCentersFrac.y
-	);
-	result = dataLerped.xyzw;
-	return result;
-
-}
-
-float fbm(in float3 st) {
+float fbm(in float3 uvw) {
 	// Initial values
 	float value = 0.0;
-	float amplitude = .5;
-	float frequency = 0.;
+	float lacunarity = 2.0;
+	float gain = 0.5;
 	//
+	// Initial values
+	float amplitude =1.0f;
+	float frequency = 3.;
+
 	// Loop of octaves
-	for (int i = 0; i < _Octaves; i++) {
-		value += amplitude * (_PerlinNoise[st]).r;
-		st *= 2.;
-		amplitude *= .5;
+	for (int i = 0; i < 5; i++) {
+		value += amplitude * (TrilinearSampling(_PerlinNoise, int3(64, 64, 64), frequency * uvw).r);
+		frequency *= lacunarity;
+		amplitude *= gain;
 	}
 	return value;
 }
@@ -211,9 +215,9 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 
 	float3 uvw = float3((float)id.x / 64.0, (float)id.y / 64.0, (float)id.z / 64);
 	
-	uvw.x = uvw.x > 1.0 ? frac(uvw.x) : uvw.x;
+	/*uvw.x = uvw.x > 1.0 ? frac(uvw.x) : uvw.x;
 	uvw.y = uvw.y > 1.0 ? frac(uvw.y) : uvw.y;
-	uvw.z = uvw.z > 1.0 ? frac(uvw.z) : uvw.z;
+	uvw.z = uvw.z > 1.0 ? frac(uvw.z) : uvw.z;*/
 
 	float density = fbm(uvw);
 

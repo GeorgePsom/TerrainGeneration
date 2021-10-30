@@ -7,6 +7,7 @@
 //};
 
 StructuredBuffer<int> _TriangleTable;
-Texture3D<float4> _TerrainMap;
+StructuredBuffer<float> _TerrainMap;
+float3 _Dims;
 
 #endif
