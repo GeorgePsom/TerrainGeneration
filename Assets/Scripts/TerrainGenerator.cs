@@ -17,9 +17,9 @@ public class TerrainGenerator : MonoBehaviour
     //public int Octaves;
     
     public ComputeShader densityShader;
-    public ComputeShader perlinNoiseCS;
-    public ComputeShader prefixSumCS;
-    public ComputeShader numPolygonsCS;
+   // public ComputeShader perlinNoiseCS;
+    //public ComputeShader prefixSumCS;
+    //public ComputeShader numPolygonsCS;
 	public ComputeShader marchingCubesCS;
 
     //private RenderTexture rt;
@@ -47,25 +47,45 @@ public class TerrainGenerator : MonoBehaviour
 	public float boundsSize = 1;
 	public Vector3 offset = Vector3.zero;
 
-	[Range(2, 10000)]
+	[Range(2, 100)]
 	public int numPointsPerAxis = 30;
 
 	private MeshFilter meshFilter;
 	private Mesh mesh;
 	private Material mat;
 
-
+	// Buffers
+	private ComputeBuffer triangleBuffer;
 	private ComputeBuffer pointsBuffer;
-	private void Awake()
-    {
-        
+	private ComputeBuffer triCountBuffer;
 
-    }
-    
-    
 
-    // Start is called before the first frame update
-    void Start()
+	struct Triangle
+	{
+#pragma warning disable 649 // disable unassigned variable warning
+		public Vector3 a;
+		public Vector3 b;
+		public Vector3 c;
+
+		public Vector3 this[int i]
+		{
+			get
+			{
+				switch (i)
+				{
+					case 0:
+						return a;
+					case 1:
+						return b;
+					default:
+						return c;
+				}
+			}
+		}
+	}
+
+	// Start is called before the first frame update
+	void Start()
     {
        
         //GeneratePerlinNoise3D();
@@ -127,7 +147,7 @@ public class TerrainGenerator : MonoBehaviour
 
     void Update()
     {
-		GenerateDensity();
+		
 		
 	}
    
@@ -188,67 +208,106 @@ public class TerrainGenerator : MonoBehaviour
 		int numPoints = numPointsPerAxis * numPointsPerAxis * numPointsPerAxis;
 
 		int numVoxelsPerAxis = numPointsPerAxis - 1;
+		int numVoxels = numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis;
 		int numThreadsPerAxis = Mathf.CeilToInt(numVoxelsPerAxis / (float)8);
 		float pointSpacing = boundsSize / (numPointsPerAxis - 1);
 
-		ComputeBuffer triangleTableBuffer = new ComputeBuffer(256*16, sizeof(int));
-		triangleTableBuffer.SetData(TriangleTable);
-		numPolygonsCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
-        numPolygonsCS.SetFloat("_isoLevel", isoLevel);
-		numPolygonsCS.SetFloat("_numPointsPerAxis", numPointsPerAxis);
-		numPolygonsCS.SetBuffer(0, "_points", pointsBuffer);
-		
-        numPolysBuffer = new ComputeBuffer(numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis, sizeof(int));
-        numPolygonsCS.SetBuffer(0, "_NumOfPolygons", numPolysBuffer);
-        numPolygonsCS.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
-		
+		//ComputeBuffer triangleTableBuffer = new ComputeBuffer(256*16, sizeof(int));
+		//triangleTableBuffer.SetData(TriangleTable);
+		//numPolygonsCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
+		//      numPolygonsCS.SetFloat("_isoLevel", isoLevel);
+		//numPolygonsCS.SetFloat("_numPointsPerAxis", numPointsPerAxis);
+		//numPolygonsCS.SetBuffer(0, "_points", pointsBuffer);
 
-        // Find the prefix sum of polygons
-        int iter = (int)System.Math.Ceiling(System.Math.Log(xSize * ySize * zSize, 2)) - 1;
+		//      numPolysBuffer = new ComputeBuffer(numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis, sizeof(int));
+		//      numPolygonsCS.SetBuffer(0, "_NumOfPolygons", numPolysBuffer);
+		//      numPolygonsCS.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
 
-        for (int i = 0; i < iter + 1; i++)
-        {
-            prefixSumCS.SetBuffer(0, "_pSum", numPolysBuffer);
-			prefixSumCS.SetFloat("_isoLevel", isoLevel);
-			prefixSumCS.SetFloat("_numPointsPerAxis", numPointsPerAxis);
-			prefixSumCS.SetInt("_iter", i);
-			prefixSumCS.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
 
-        }
-        int[] prefixSumArray = new int[numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis];
-        numPolysBuffer.GetData(prefixSumArray);
-        int totalPolygs = prefixSumArray[prefixSumArray.Length - 1];
-       
-        // March cubes	
+		//      // Find the prefix sum of polygons
+		//      int iter = (int)System.Math.Ceiling(System.Math.Log(xSize * ySize * zSize, 2)) - 1;
+
+		//      for (int i = 0; i < iter + 1; i++)
+		//      {
+		//          prefixSumCS.SetBuffer(0, "_pSum", numPolysBuffer);
+		//	prefixSumCS.SetFloat("_isoLevel", isoLevel);
+		//	prefixSumCS.SetFloat("_numPointsPerAxis", numPointsPerAxis);
+		//	prefixSumCS.SetInt("_iter", i);
+		//	prefixSumCS.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
+
+		//      }
+
+		//int[] prefixSumArray = new int[numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis];
+		//numPolysBuffer.GetData(prefixSumArray);
+		//int totalPolygs = prefixSumArray[prefixSumArray.Length - 1];
+
+		// March cubes	
+
+		int maxTriangleCount = numVoxels * 5;
+		triangleBuffer = new ComputeBuffer(maxTriangleCount, sizeof(float) * 3 * 3, ComputeBufferType.Append);
+		triCountBuffer = new ComputeBuffer(1, sizeof(int),
+			ComputeBufferType.Raw);
         
-        ComputeBuffer verticesBuffer = new ComputeBuffer(3 * totalPolygs, 3 * sizeof(float));
-        Vector3[] verticesArray = new Vector3[3 * totalPolygs];
-        ComputeBuffer trianglesBuffer = new ComputeBuffer(3 * totalPolygs, sizeof(int));
-        int[] trianglesArray = new int[3 * totalPolygs];
+        //ComputeBuffer verticesBuffer = new ComputeBuffer(3 * totalPolygs, 3 * sizeof(float));
+        //Vector3[] verticesArray = new Vector3[3 * totalPolygs];
+        //ComputeBuffer trianglesBuffer = new ComputeBuffer(3 * totalPolygs, sizeof(int));
+        //int[] trianglesArray = new int[3 * totalPolygs];
 		
-		marchingCubesCS.SetBuffer(0, "_Vertices", verticesBuffer);
-        marchingCubesCS.SetBuffer(0, "_Triangles", trianglesBuffer);
-        marchingCubesCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
-        marchingCubesCS.SetFloat("_isoLevel", isoLevel);
-		marchingCubesCS.SetBuffer(0, "_points", pointsBuffer);
-		marchingCubesCS.SetFloat("_numPointsPerAxis", numPointsPerAxis);
-		marchingCubesCS.SetBuffer(0, "_PrefixSumPolygons", numPolysBuffer);
+		//marchingCubesCS.SetBuffer(0, "_Vertices", verticesBuffer);
+  //      marchingCubesCS.SetBuffer(0, "_Triangles", trianglesBuffer);
+  //      marchingCubesCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
+        marchingCubesCS.SetFloat("isoLevel", isoLevel);
+		marchingCubesCS.SetBuffer(0, "points", pointsBuffer);
+		marchingCubesCS.SetBuffer(0, "triangles", triangleBuffer);
+		marchingCubesCS.SetFloat("numPointsPerAxis", numPointsPerAxis);
+		//marchingCubesCS.SetBuffer(0, "_PrefixSumPolygons", numPolysBuffer);
         marchingCubesCS.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
 
-        verticesBuffer.GetData(verticesArray);
-        trianglesBuffer.GetData(trianglesArray);
 
-        mesh = new Mesh();
-        mesh.vertices = verticesArray;
-        mesh.triangles = trianglesArray;
-        mesh.RecalculateNormals();
-        meshFilter.mesh = mesh;
 
-		triangleTableBuffer.Release();
-		numPolysBuffer.Release();
-		verticesBuffer.Release();
-		trianglesBuffer.Release();
-		
+		// Get number of triangles in the triangle buffer
+		ComputeBuffer.CopyCount(triangleBuffer, triCountBuffer, 0);
+		int[] triCountArray = { 0 };
+		triCountBuffer.GetData(triCountArray);
+		int numTris = triCountArray[0];
+
+		// Get triangle data from shader
+		Triangle[] tris = new Triangle[numTris];
+		triangleBuffer.GetData(tris, 0, 0, numTris);
+
+	    mesh = new Mesh();
+		//mesh.Clear();
+
+		var vertices = new Vector3[numTris * 3];
+		var meshTriangles = new int[numTris * 3];
+
+		for (int i = 0; i < numTris; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				meshTriangles[i * 3 + j] = i * 3 + j;
+				vertices[i * 3 + j] = tris[i][j];
+			}
+		}
+		mesh.vertices = vertices;
+		mesh.triangles = meshTriangles;
+
+		mesh.RecalculateNormals();
+
+		//      verticesBuffer.GetData(verticesArray);
+		//      trianglesBuffer.GetData(trianglesArray);
+
+		//      mesh = new Mesh();
+		//      mesh.vertices = verticesArray;
+		//      mesh.triangles = trianglesArray;
+		//      mesh.RecalculateNormals();
+		//      meshFilter.mesh = mesh;
+
+		//triangleTableBuffer.Release();
+		//numPolysBuffer.Release();
+		//verticesBuffer.Release();
+		//trianglesBuffer.Release();
+
 
 
 

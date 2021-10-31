@@ -253,10 +253,7 @@ MonoBehaviour:
   zSize: 32
   Scale: 0.5
   densityShader: {fileID: 7200000, guid: b0323dca5e869f14eab1b8cba02b9688, type: 3}
-  perlinNoiseCS: {fileID: 7200000, guid: 7b62e068b8c30c84487e994165ab27ca, type: 3}
-  prefixSumCS: {fileID: 7200000, guid: 632abadab6191af478327c9f0d6a5742, type: 3}
-  numPolygonsCS: {fileID: 7200000, guid: 60ca73bdf588ae1449607ff6226f184c, type: 3}
-  marchingCubesCS: {fileID: 7200000, guid: 7070d1ff41dfa2746b23ae4839c7fd30, type: 3}
+  marchingCubesCS: {fileID: 7200000, guid: 592445a4c49b053449a9f4b474c02fd3, type: 3}
   seed: 1
   numOctaves: 8
   lacunarity: 2
@@ -270,7 +267,7 @@ MonoBehaviour:
   hardFloorWeight: 0
   shaderParams: {x: 5.08, y: 1.06, z: 0.4, w: -0.03}
   isoLevel: 8
-  boundsSize: 10
+  boundsSize: 100
   offset: {x: -0.64, y: 0, z: 0}
   numPointsPerAxis: 30
 --- !u!23 &829063725
