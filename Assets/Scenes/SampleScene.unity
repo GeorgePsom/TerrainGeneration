@@ -266,10 +266,10 @@ MonoBehaviour:
   hardFloorHeight: 0
   hardFloorWeight: 0
   shaderParams: {x: 5.08, y: 1.06, z: 0.4, w: -0.03}
-  isoLevel: 8
-  boundsSize: 100
-  offset: {x: -0.64, y: 0, z: 0}
-  numPointsPerAxis: 30
+  isoLevel: 15.4
+  boundsSize: 10
+  offset: {x: 5.27, y: -0.07, z: 0.02}
+  numPointsPerAxis: 8
 --- !u!23 &829063725
 MeshRenderer:
   m_ObjectHideFlags: 0

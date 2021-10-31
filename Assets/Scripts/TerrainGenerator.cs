@@ -58,7 +58,7 @@ public class TerrainGenerator : MonoBehaviour
 	private ComputeBuffer triangleBuffer;
 	private ComputeBuffer pointsBuffer;
 	private ComputeBuffer triCountBuffer;
-
+	private ComputeBuffer triangleTableBuffer;
 
 	struct Triangle
 	{
@@ -87,7 +87,7 @@ public class TerrainGenerator : MonoBehaviour
 	// Start is called before the first frame update
 	void Start()
     {
-       
+		triangleTableBuffer = new ComputeBuffer(256 * 16, sizeof(int));
         //GeneratePerlinNoise3D();
 		meshFilter = GetComponent<MeshFilter>();
         MeshRenderer renderer = GetComponent<MeshRenderer>();
@@ -147,8 +147,10 @@ public class TerrainGenerator : MonoBehaviour
 
     void Update()
     {
-		
-		
+		//GenerateDensity();
+		//Generate();
+
+
 	}
    
 	private void GenerateDensity()
@@ -205,7 +207,7 @@ public class TerrainGenerator : MonoBehaviour
 	
     private void Generate()
     {
-		int numPoints = numPointsPerAxis * numPointsPerAxis * numPointsPerAxis;
+		//int numPoints = numPointsPerAxis * numPointsPerAxis * numPointsPerAxis;
 
 		int numVoxelsPerAxis = numPointsPerAxis - 1;
 		int numVoxels = numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis;
@@ -247,16 +249,17 @@ public class TerrainGenerator : MonoBehaviour
 		triangleBuffer = new ComputeBuffer(maxTriangleCount, sizeof(float) * 3 * 3, ComputeBufferType.Append);
 		triCountBuffer = new ComputeBuffer(1, sizeof(int),
 			ComputeBufferType.Raw);
-        
-        //ComputeBuffer verticesBuffer = new ComputeBuffer(3 * totalPolygs, 3 * sizeof(float));
-        //Vector3[] verticesArray = new Vector3[3 * totalPolygs];
-        //ComputeBuffer trianglesBuffer = new ComputeBuffer(3 * totalPolygs, sizeof(int));
-        //int[] trianglesArray = new int[3 * totalPolygs];
-		
+
+		//ComputeBuffer verticesBuffer = new ComputeBuffer(3 * totalPolygs, 3 * sizeof(float));
+		//Vector3[] verticesArray = new Vector3[3 * totalPolygs];
+		//ComputeBuffer trianglesBuffer = new ComputeBuffer(3 * totalPolygs, sizeof(int));
+		//int[] trianglesArray = new int[3 * totalPolygs];
+
 		//marchingCubesCS.SetBuffer(0, "_Vertices", verticesBuffer);
-  //      marchingCubesCS.SetBuffer(0, "_Triangles", trianglesBuffer);
-  //      marchingCubesCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
-        marchingCubesCS.SetFloat("isoLevel", isoLevel);
+		//      marchingCubesCS.SetBuffer(0, "_Triangles", trianglesBuffer);
+		//      marchingCubesCS.SetBuffer(0, "_TriangleTable", triangleTableBuffer);
+		triangleBuffer.SetCounterValue(0);
+		marchingCubesCS.SetFloat("isoLevel", isoLevel);
 		marchingCubesCS.SetBuffer(0, "points", pointsBuffer);
 		marchingCubesCS.SetBuffer(0, "triangles", triangleBuffer);
 		marchingCubesCS.SetFloat("numPointsPerAxis", numPointsPerAxis);
@@ -291,7 +294,7 @@ public class TerrainGenerator : MonoBehaviour
 		}
 		mesh.vertices = vertices;
 		mesh.triangles = meshTriangles;
-
+		meshFilter.mesh = mesh;
 		mesh.RecalculateNormals();
 
 		//      verticesBuffer.GetData(verticesArray);

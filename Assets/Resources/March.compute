@@ -15,7 +15,7 @@ AppendStructuredBuffer<Triangle> triangles;
 //AppendStructuredBuffer<int> indices;
 RWStructuredBuffer<float4> points;
 
-int numPointsPerAxis;
+float numPointsPerAxis;
 float isoLevel;
 
 float3 interpolateVerts(float4 v1, float4 v2) {
@@ -24,13 +24,13 @@ float3 interpolateVerts(float4 v1, float4 v2) {
 }
 
 int indexFromCoord(int x, int y, int z) {
-    return z * numPointsPerAxis * numPointsPerAxis + y * numPointsPerAxis + x;
+    return z *(int) numPointsPerAxis * (int)numPointsPerAxis + y * (int)numPointsPerAxis + x;
 }
 [numthreads(numThreads, numThreads, numThreads)]
 void March(int3 id : SV_DispatchThreadID)
 {
     // Stop one point before the end because voxel includes neighbouring points
-    if (id.x >= numPointsPerAxis - 1 || id.y >= numPointsPerAxis - 1 || id.z >= numPointsPerAxis - 1) {
+    if (id.x >= (int)numPointsPerAxis - 1 || id.y >= (int)numPointsPerAxis - 1 || id.z >= (int)numPointsPerAxis - 1) {
         return;
     }
 
