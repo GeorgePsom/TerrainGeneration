@@ -18,12 +18,17 @@ float4 _params;
 //World Params
 RWStructuredBuffer<float4> _points;
 float _numPointsPerAxis;
-float _boundsSize;
+float3 _boundsSize;
 float3 _center;
 float3 _offset;
-float _spacing;
+float3 _spacing;
 float3 _worldSize;
 
+
+// Landscape 
+
+// Mountain
+float _mountainous;
 
 int indexFromCoord(uint x, uint y, uint z) {
 	return z * (int)_numPointsPerAxis * (int)_numPointsPerAxis + y * (int)_numPointsPerAxis + x;
@@ -32,6 +37,7 @@ int indexFromCoord(uint x, uint y, uint z) {
 [numthreads(8, 8, 8)]
 void Density(int3 id: SV_DispatchThreadID)
 {
+	const float PI = 3.14159265358979323846;
 	if (id.x >= (int)_numPointsPerAxis || id.y >= (int)_numPointsPerAxis || id.z >= (int)_numPointsPerAxis)
 		return;
 
@@ -42,6 +48,8 @@ void Density(int3 id: SV_DispatchThreadID)
 	float frequency = _noiseScale / 100.0;
 	float amplitude = 1.0;
 	float weight = 1.0f;
+	float warp = snoise(pos * 0.009f);
+	warp *= 4.0f;
 	for (int j = 0; j <(int) _octaves; j++)
 	{
 		float n = snoise((pos + offsetNoise) * frequency + _offsets[j] + _offset);
@@ -54,18 +62,15 @@ void Density(int3 id: SV_DispatchThreadID)
 		frequency *= _lacunarity;
 	}
 
-	float finalVal = -(pos.y + _floorOffset) + noise * _noiseWeight + (pos.y % _params.x) * _params.y;
+	//float mountain = _params.y * sin(PI * pos.y/ (float)_boundsSize.y);
+	float finalVal = -(pos.y + _floorOffset) + noise * _noiseWeight +
+		(sin(2.0f * PI * pos.z/_mountainous) + sin(2.0f * PI * pos.x / _mountainous)) * _params.y;
 	
-	if (pos.y < _hardFloor)
-		finalVal += _hardFloorWeight;
-
-	if (_closeEdges)
-	{
-		float3 edgeOffset = abs(pos * 2.0) - _worldSize + _spacing / 2.0;
-		float edgeWeight = saturate(sign(max(max(edgeOffset.x, edgeOffset.y), edgeOffset.z)));
-		finalVal = finalVal * (1 - edgeWeight) - 100 * edgeWeight;
-	}
+	
+	/*finalVal = noise * _noiseWeight;*/	
+	finalVal += saturate((_hardFloor - pos.y) * 3.0f) * 40.0f;
 
 	int index = indexFromCoord(id.x, id.y, id.z);
+	//finalVal = -pos.y   + noise * _noiseWeight;
 	_points[index] = float4(pos, finalVal);
 }

@@ -13,7 +13,9 @@ public class TerrainGenerator : MonoBehaviour
     public ComputeShader numPolygonsCS;
 	public ComputeShader marchingCubesCS;
 
-   
+	[Header("Mountaints")]
+	[Tooltip("Value should be between 32-256.")]
+	public float mountainous = 32.0f;
 
 	[Header("Noise")]
 	public int seed;
@@ -31,9 +33,11 @@ public class TerrainGenerator : MonoBehaviour
 
 	[Header("World")]
 	public float isoLevel;
-	public float boundsSize = 1;
+	public Vector3 boundsSize;
 	public Vector3 offset = Vector3.zero;
 
+
+	
 	[Range(2, 2048)]
 	public int numPointsPerAxis = 30;
 
@@ -69,8 +73,13 @@ public class TerrainGenerator : MonoBehaviour
 		//Generate();
 
 	}
-   
-	private void CreateBuffers()
+    private void OnValidate()
+    {
+		GenerateDensity();
+		Generate();
+    }
+
+    private void CreateBuffers()
     {
 		int numPoints = numPointsPerAxis * numPointsPerAxis * numPointsPerAxis;
 
@@ -89,7 +98,7 @@ public class TerrainGenerator : MonoBehaviour
 
 		int numVoxelsPerAxis = numPointsPerAxis - 1;
 		int numThreadsPerAxis = Mathf.CeilToInt(numPointsPerAxis / (float)8);
-		float pointSpacing = boundsSize / (numPointsPerAxis - 1);
+		Vector3 pointSpacing = boundsSize / (numPointsPerAxis - 1);
 		
 		
 
@@ -107,11 +116,11 @@ public class TerrainGenerator : MonoBehaviour
 		densityShader.SetFloat("_numPointsPerAxis", numPointsPerAxis);
 		densityShader.SetFloat("_isoLevel", isoLevel);
 		Vector3 center = Vector3.zero;
-		Vector3 worldBounds = Vector3.one * boundsSize;
+		Vector3 worldBounds = boundsSize;
 		densityShader.SetVector("_centre", new Vector4(center.x, center.y, center.z));
-		densityShader.SetFloat("_boundsSize", boundsSize);
+		densityShader.SetVector("_boundsSize", boundsSize);
 		densityShader.SetVector("_offset", new Vector4(offset.x, offset.y, offset.z));
-		densityShader.SetFloat("_spacing", pointSpacing);
+		densityShader.SetVector("_spacing", pointSpacing);
 		densityShader.SetVector("worldSize", worldBounds);
 		densityShader.SetFloat("_octaves", Mathf.Max(1, numOctaves));
 		densityShader.SetFloat("_lacunarity", lacunarity);
@@ -125,6 +134,8 @@ public class TerrainGenerator : MonoBehaviour
 		densityShader.SetFloat("_hardFloor", hardFloorHeight);
 		densityShader.SetFloat("_hardFloorWeight", hardFloorWeight);
 		densityShader.SetVector("_params", shaderParams);
+
+		densityShader.SetFloat("_mountainous", mountainous);
 		densityShader.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
 
 
@@ -137,8 +148,7 @@ public class TerrainGenerator : MonoBehaviour
 		int numVoxelsPerAxis = numPointsPerAxis - 1;
 		int numVoxels = numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis;
 		int numThreadsPerAxis = Mathf.CeilToInt(numVoxelsPerAxis / (float)8);
-		float pointSpacing = boundsSize / (numPointsPerAxis - 1);
-
+		
 		
 
 		numPolygonsCS.SetFloat("_isoLevel", isoLevel);
