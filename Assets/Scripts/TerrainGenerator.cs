@@ -106,11 +106,12 @@ public class TerrainGenerator : MonoBehaviour
 		var prng = new System.Random(seed);
 		var offsets = new Vector3[numOctaves];
 		float offsetRange = 1000;
+		Debug.Log(offsets);
 		for (int i = 0; i < numOctaves; i++)
 		{
 			offsets[i] = new Vector3((float)prng.NextDouble() * 2 - 1, (float)prng.NextDouble() * 2 - 1, (float)prng.NextDouble() * 2 - 1) * offsetRange;
 		}
-		
+		Debug.Log(offsets);
 		offsetsBuffer.SetData(offsets);
 		densityShader.SetBuffer(0, "_points", pointsBuffer);
 		densityShader.SetFloat("_numPointsPerAxis", numPointsPerAxis);
