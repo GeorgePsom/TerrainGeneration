@@ -255,16 +255,16 @@ MonoBehaviour:
   mountainous: 96
   seed: 1
   numOctaves: 8
-  lacunarity: 1.8
+  lacunarity: 2
   persistence: 0.54
-  noiseScale: 0.6
-  noiseWeight: 20
+  noiseScale: 2.71
+  noiseWeight: 11.24
   closeEdges: 0
   floorOffset: 1
   weightMultiplier: 10
   hardFloorHeight: -64
   hardFloorWeight: 0
-  shaderParams: {x: 4.7, y: 30, z: 0.4, w: -0.03}
+  shaderParams: {x: 5.08, y: 1.06, z: 0.4, w: -0.03}
   isoLevel: 8
   boundsSize: {x: 128, y: 256, z: 128}
   offset: {x: 0, y: 0, z: 0}
