@@ -248,11 +248,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b9dbf4ed27c9b3409f88debf09d4c38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xSize: 32
-  ySize: 8
-  zSize: 32
-  Scale: 0.5
   densityShader: {fileID: 7200000, guid: b0323dca5e869f14eab1b8cba02b9688, type: 3}
+  prefixSumCS: {fileID: 7200000, guid: 632abadab6191af478327c9f0d6a5742, type: 3}
+  numPolygonsCS: {fileID: 7200000, guid: 60ca73bdf588ae1449607ff6226f184c, type: 3}
   marchingCubesCS: {fileID: 7200000, guid: 592445a4c49b053449a9f4b474c02fd3, type: 3}
   seed: 1
   numOctaves: 8
@@ -266,10 +264,10 @@ MonoBehaviour:
   hardFloorHeight: 0
   hardFloorWeight: 0
   shaderParams: {x: 5.08, y: 1.06, z: 0.4, w: -0.03}
-  isoLevel: 15.4
+  isoLevel: 8
   boundsSize: 10
-  offset: {x: 5.27, y: -0.07, z: 0.02}
-  numPointsPerAxis: 8
+  offset: {x: 1.12, y: -0.14, z: -0.51}
+  numPointsPerAxis: 16
 --- !u!23 &829063725
 MeshRenderer:
   m_ObjectHideFlags: 0

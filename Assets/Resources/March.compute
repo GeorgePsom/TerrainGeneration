@@ -1,19 +1,13 @@
 #pragma kernel March
 
-
 #include "MarchingCubesTables.hlsl"
 
 static const int numThreads = 8;
 
-struct Triangle {
-    float3 vertexC;
-    float3 vertexB;
-    float3 vertexA;
-};
-//StructuredBuffer<int> _TriangleTable;
-AppendStructuredBuffer<Triangle> triangles;
-//AppendStructuredBuffer<int> indices;
 RWStructuredBuffer<float4> points;
+RWStructuredBuffer<float3> _Vertices;
+RWStructuredBuffer<int> _Triangles;
+StructuredBuffer<int> _PrefixSumPolygons;
 
 float numPointsPerAxis;
 float isoLevel;
@@ -25,6 +19,10 @@ float3 interpolateVerts(float4 v1, float4 v2) {
 
 int indexFromCoord(int x, int y, int z) {
     return z *(int) numPointsPerAxis * (int)numPointsPerAxis + y * (int)numPointsPerAxis + x;
+}
+
+int indexFromVoxel(int x, int y, int z) {
+    return z * ((int)numPointsPerAxis - 1) * ((int)numPointsPerAxis - 1) + y * ((int)numPointsPerAxis - 1) + x;
 }
 [numthreads(numThreads, numThreads, numThreads)]
 void March(int3 id : SV_DispatchThreadID)
@@ -59,9 +57,9 @@ void March(int3 id : SV_DispatchThreadID)
     if (cubeCorners[5].w < isoLevel) cubeIndex |= 32;
     if (cubeCorners[6].w < isoLevel) cubeIndex |= 64;
     if (cubeCorners[7].w < isoLevel) cubeIndex |= 128;
-
+    int index1D = indexFromVoxel(id.x, id.y, id.z);
     // Create triangles for current cube configuration
-    for (int i = 0; triangulation[cubeIndex][i] != -1; i += 3) {
+    for (int i = 0; triangulation[cubeIndex][i] != -1 && i < 16; i += 3) {
         // Get indices of corner points A and B for each of the three edges
         // of the cube that need to be joined to form the triangle.
         int a0 = cornerIndexAFromEdge[triangulation[cubeIndex][i]];
@@ -73,11 +71,18 @@ void March(int3 id : SV_DispatchThreadID)
         int a2 = cornerIndexAFromEdge[triangulation[cubeIndex][i + 2]];
         int b2 = cornerIndexBFromEdge[triangulation[cubeIndex][i + 2]];
 
-        Triangle tri;
-        tri.vertexA = interpolateVerts(cubeCorners[a0], cubeCorners[b0]);
-        tri.vertexB = interpolateVerts(cubeCorners[a1], cubeCorners[b1]);
-        tri.vertexC = interpolateVerts(cubeCorners[a2], cubeCorners[b2]);
-        triangles.Append(tri);
+        int nPreviousPolys = index1D > 0 ? _PrefixSumPolygons[index1D - 1] : 0;
+        int indexCurrentVertex = 3 * nPreviousPolys + i  ;
+        _Vertices[indexCurrentVertex] = interpolateVerts(cubeCorners[a2], cubeCorners[b2]);
+        _Triangles[indexCurrentVertex] = indexCurrentVertex;
+
+        _Vertices[indexCurrentVertex + 1] = interpolateVerts(cubeCorners[a1], cubeCorners[b1]);
+        _Triangles[indexCurrentVertex + 1] = indexCurrentVertex + 1;
+
+        _Vertices[indexCurrentVertex + 2] = interpolateVerts(cubeCorners[a0], cubeCorners[b0]);
+        _Triangles[indexCurrentVertex + 2] = indexCurrentVertex + 2;
+
+     
     }
 
 
