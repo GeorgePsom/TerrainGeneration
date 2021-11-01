@@ -26,10 +26,10 @@ int indexFromVoxel(int x, int y, int z) {
 [numthreads(8,8,8)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    //// Stop one point before the end because voxel includes neighbouring points
-    //if (id.x >= (int)__numPointsPerAxis - 1 || id.y >= (int)__numPointsPerAxis - 1 || id.z >= (int)__numPointsPerAxis - 1) {
-    //    return;
-    //}
+    // Stop one point before the end because voxel includes neighbouring points
+    if (id.x >= (int)_numPointsPerAxis - 1 || id.y >= (int)_numPointsPerAxis - 1 || id.z >= (int)_numPointsPerAxis - 1) {
+        return;
+    }
 
     // 8 corners of the current cube
     float4 cubeCorners[8] = {

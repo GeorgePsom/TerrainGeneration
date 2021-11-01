@@ -34,16 +34,17 @@ public class TerrainGenerator : MonoBehaviour
 	public float boundsSize = 1;
 	public Vector3 offset = Vector3.zero;
 
-	[Range(2, 100)]
+	[Range(2, 2048)]
 	public int numPointsPerAxis = 30;
 
 	private MeshFilter meshFilter;
 	private Mesh mesh;
 	private Material mat;
 
-	
+	// Buffers
 	private ComputeBuffer pointsBuffer;
 	private ComputeBuffer numPolysBuffer;
+	private ComputeBuffer offsetsBuffer;
 
 
 
@@ -54,6 +55,7 @@ public class TerrainGenerator : MonoBehaviour
         MeshRenderer renderer = GetComponent<MeshRenderer>();
         renderer.receiveShadows = true;
         mat = renderer.material;
+		CreateBuffers();
 		GenerateDensity();
 		Generate();
     }
@@ -68,6 +70,18 @@ public class TerrainGenerator : MonoBehaviour
 
 	}
    
+	private void CreateBuffers()
+    {
+		int numPoints = numPointsPerAxis * numPointsPerAxis * numPointsPerAxis;
+
+		int numVoxelsPerAxis = numPointsPerAxis - 1;
+		int numThreadsPerAxis = Mathf.CeilToInt(numPointsPerAxis / (float)8);
+		pointsBuffer = new ComputeBuffer(numPoints, sizeof(float) * 4);
+		var offsets = new Vector3[numOctaves];
+		offsetsBuffer = new ComputeBuffer(offsets.Length, sizeof(float) * 3);
+		numPolysBuffer = new ComputeBuffer(numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis, sizeof(int));
+		
+	}
 	private void GenerateDensity()
     {
 		
@@ -76,8 +90,8 @@ public class TerrainGenerator : MonoBehaviour
 		int numVoxelsPerAxis = numPointsPerAxis - 1;
 		int numThreadsPerAxis = Mathf.CeilToInt(numPointsPerAxis / (float)8);
 		float pointSpacing = boundsSize / (numPointsPerAxis - 1);
-
-		pointsBuffer = new ComputeBuffer(numPoints, sizeof(float) * 4);
+		
+		
 
 		// Noise parameters
 		var prng = new System.Random(seed);
@@ -87,7 +101,7 @@ public class TerrainGenerator : MonoBehaviour
 		{
 			offsets[i] = new Vector3((float)prng.NextDouble() * 2 - 1, (float)prng.NextDouble() * 2 - 1, (float)prng.NextDouble() * 2 - 1) * offsetRange;
 		}
-		var offsetsBuffer = new ComputeBuffer(offsets.Length, sizeof(float) * 3);
+		
 		offsetsBuffer.SetData(offsets);
 		densityShader.SetBuffer(0, "_points", pointsBuffer);
 		densityShader.SetFloat("_numPointsPerAxis", numPointsPerAxis);
@@ -125,7 +139,7 @@ public class TerrainGenerator : MonoBehaviour
 		int numThreadsPerAxis = Mathf.CeilToInt(numVoxelsPerAxis / (float)8);
 		float pointSpacing = boundsSize / (numPointsPerAxis - 1);
 
-		numPolysBuffer = new ComputeBuffer(numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis, sizeof(int));
+		
 
 		numPolygonsCS.SetFloat("_isoLevel", isoLevel);
         numPolygonsCS.SetFloat("_numPointsPerAxis", numPointsPerAxis);
@@ -152,9 +166,9 @@ public class TerrainGenerator : MonoBehaviour
         numPolysBuffer.GetData(prefixSumArray);
         int totalPolygs = prefixSumArray[prefixSumArray.Length - 1];
 
-        // March cubes	
-        ComputeBuffer verticesBuffer = new ComputeBuffer(3 * totalPolygs, 3 * sizeof(float));
-        Vector3[] verticesArray = new Vector3[3 * totalPolygs];
+		// March cubes	
+		ComputeBuffer verticesBuffer = new ComputeBuffer(3 * totalPolygs, 3 * sizeof(float));
+		Vector3[] verticesArray = new Vector3[3 * totalPolygs];
         ComputeBuffer trianglesBuffer = new ComputeBuffer(3 * totalPolygs, sizeof(int));
         int[] trianglesArray = new int[3 * totalPolygs];
 
@@ -179,7 +193,7 @@ public class TerrainGenerator : MonoBehaviour
         meshFilter.mesh = mesh;
 
        
-        numPolysBuffer.Release();
+        //numPolysBuffer.Release();
         verticesBuffer.Release();
         trianglesBuffer.Release();
 
