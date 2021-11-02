@@ -1,55 +1,64 @@
 Shader "Custom/NewSurfaceShader"
 {
-    Properties
-    {
-        _Color ("Color", Color) = (1,1,1,1)
-        _MainTex ("Albedo (RGB)", 2D) = "white" {}
-        _Glossiness ("Smoothness", Range(0,1)) = 0.5
-        _Metallic ("Metallic", Range(0,1)) = 0.0
-        _ExampleName("Texture3D", 3D) = "" {}
-    }
-    SubShader
-    {
-        Tags { "RenderType"="Opaque" }
-        LOD 200
+    Properties {
 
-        CGPROGRAM
-        // Physically based Standard lighting model, and enable shadows on all light types
-        #pragma surface surf Standard fullforwardshadows
+	}
+	SubShader {
+		Tags { "RenderType"="Opaque" }
+		LOD 200
+		
+		CGPROGRAM
+		// Physically based Standard lighting model, and enable shadows on all light types
+		#pragma surface surf Standard fullforwardshadows
 
-        // Use shader model 3.0 target, to get nicer looking lighting
-        #pragma target 3.0
+		// Use shader model 3.0 target, to get nicer looking lighting
+		#pragma target 3.0
 
-        sampler2D _MainTex;
+		const static int maxColourCount = 8;
 
-        struct Input
-        {
-            float2 uv_MainTex;
-        };
+		int baseColourCount;
+		float3 baseColours[maxColourCount];
+		float baseStartHeights[maxColourCount];
 
-        half _Glossiness;
-        half _Metallic;
-        sampler3D _ExampleName;
-        fixed4 _Color;
+		float minHeight = 0;
+		float maxHeight = 100;
 
-        // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
-        // See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
-        // #pragma instancing_options assumeuniformscaling
-        UNITY_INSTANCING_BUFFER_START(Props)
-            // put more per-instance properties here
-        UNITY_INSTANCING_BUFFER_END(Props)
+		struct Input {
+			float3 worldPos;
+			//float3 normal;
+		};
 
-        void surf (Input IN, inout SurfaceOutputStandard o)
-        {
-            // Albedo comes from a texture tinted by color
-            float4 c = tex3D (_ExampleName, float3(0.5, 0.5 ,0.5));
-            o.Albedo = c.rgb;
-            // Metallic and smoothness come from slider variables
-            o.Metallic = _Metallic;
-            o.Smoothness = _Glossiness;
-            o.Alpha = c.a;
-        }
-        ENDCG
-    }
-    FallBack "Diffuse"
+		float inverseLerp(float a, float b, float value) {
+			return saturate((value-a)/(b-a));
+		}
+
+		void surf (Input IN, inout SurfaceOutputStandard o) {
+			//float heightPercent = inverseLerp(minHeight,maxHeight, IN.worldPos.y);
+			
+				//float drawStrength = saturate(sign(heightPercent - baseStartHeights[i]));
+				//o.Albedo = o.Albedo * (1-drawStrength) + baseColours[i] * drawStrength;
+				fixed4 col;
+				if (IN.worldPos.y >= -5 && IN.worldPos.y < 0){
+                    col = fixed4(0.663f, 0.663f, 0.663, 1.0f);
+                }
+                else if(IN.worldPos.y >= 0 && IN.worldPos.y < 2){
+                    col = fixed4(1.0f, 0.8509f, 0.6666f, 1.0f);
+                }
+                else if(IN.worldPos.y >= 2 && IN.worldPos.y < 10){
+                    col = fixed4(0.0f, 1.0f, 0.0f, 1.0f);
+                }
+                else if(IN.worldPos.y >= 10 && IN.worldPos.y < 17){
+                    col = fixed4(0.5450f, 0.2705f, 0.0745f, 1.0f);
+                }
+                else{
+                    col = fixed4(0.8274f, 0.8274f, 0.8274f, 1.0f);
+                }
+				o.Albedo = col;
+			
+		}
+
+
+		ENDCG
+	}
+	FallBack "Diffuse"
 }

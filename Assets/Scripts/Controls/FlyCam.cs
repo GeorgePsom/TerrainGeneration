@@ -7,10 +7,10 @@ using System.Collections;
  
 public class FlyCam : MonoBehaviour {
 
-    float mainSpeed = 100.0f;   // Regular speed
-    float shiftAdd = 250.0f;    // Multiplied by how long shift is held. Basically camera is running, useful for large landmasses
-    float maxShift = 1000.0f;   // Maximum speed when holdin shift
-    float camSens = 0.25f;  // Rotation Sensitivity
+    public float mainSpeed = 100.0f;   // Regular speed
+    public float shiftAdd = 250.0f;    // Multiplied by how long shift is held. Basically camera is running, useful for large landmasses
+    public float maxShift = 1000.0f;   // Maximum speed when holdin shift
+    public float camSens = 0.25f;  // Rotation Sensitivity
     
     private Vector3 lastMouse = new Vector3(255, 255, 255);
     private float totalRun= 1.0f;
