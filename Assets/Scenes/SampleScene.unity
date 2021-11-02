@@ -252,21 +252,21 @@ MonoBehaviour:
   prefixSumCS: {fileID: 7200000, guid: 632abadab6191af478327c9f0d6a5742, type: 3}
   numPolygonsCS: {fileID: 7200000, guid: 60ca73bdf588ae1449607ff6226f184c, type: 3}
   marchingCubesCS: {fileID: 7200000, guid: 592445a4c49b053449a9f4b474c02fd3, type: 3}
-  mountainous: 96
+  mountainous: 7.09
   seed: 1
   numOctaves: 8
   lacunarity: 2
   persistence: 0.54
-  noiseScale: 2.71
-  noiseWeight: 11.24
+  noiseScale: 2
+  noiseWeight: 8
   closeEdges: 0
-  floorOffset: 1
+  floorOffset: 2.13
   weightMultiplier: 10
-  hardFloorHeight: -64
+  hardFloorHeight: 0
   hardFloorWeight: 0
-  shaderParams: {x: 5.08, y: 1.06, z: 0.4, w: -0.03}
-  isoLevel: 8
-  boundsSize: {x: 128, y: 256, z: 128}
+  shaderParams: {x: 5.08, y: 1, z: 0.4, w: -0.03}
+  isoLevel: 9.07
+  boundsSize: {x: 20, y: 20, z: 20}
   offset: {x: 0, y: 0, z: 0}
   numPointsPerAxis: 256
 --- !u!23 &829063725
@@ -359,6 +359,7 @@ GameObject:
   - component: {fileID: 963194228}
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
+  - component: {fileID: 963194229}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -431,6 +432,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &963194229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a3c4d1978de06841b8b2dad24b94bd3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!43 &1198854963
 Mesh:
   m_ObjectHideFlags: 0

@@ -14,8 +14,15 @@ public class TerrainGenerator : MonoBehaviour
 	public ComputeShader marchingCubesCS;
 
 	[Header("Mountaints")]
-	[Tooltip("Value should be between 32-256.")]
+	[Tooltip("Value should be between 5-64.")]
+	[Range(1, 128)]
 	public float mountainous = 32.0f;
+	[Range(1, 16)]
+	public float smoothness = 5;
+	[Range(0, 10)]
+	public float steepness;
+	[Range(0, 10)]
+	public float height;
 
 	[Header("Noise")]
 	public int seed;
@@ -86,8 +93,7 @@ public class TerrainGenerator : MonoBehaviour
 		int numVoxelsPerAxis = numPointsPerAxis - 1;
 		int numThreadsPerAxis = Mathf.CeilToInt(numPointsPerAxis / (float)8);
 		pointsBuffer = new ComputeBuffer(numPoints, sizeof(float) * 4);
-		var offsets = new Vector3[numOctaves];
-		offsetsBuffer = new ComputeBuffer(offsets.Length, sizeof(float) * 3);
+		
 		numPolysBuffer = new ComputeBuffer(numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis, sizeof(int));
 		
 	}
@@ -104,14 +110,14 @@ public class TerrainGenerator : MonoBehaviour
 
 		// Noise parameters
 		var prng = new System.Random(seed);
-		var offsets = new Vector3[numOctaves];
 		float offsetRange = 1000;
-		Debug.Log(offsets);
+		var offsets = new Vector3[numOctaves];
+		offsetsBuffer = new ComputeBuffer(offsets.Length, sizeof(float) * 3);
 		for (int i = 0; i < numOctaves; i++)
 		{
 			offsets[i] = new Vector3((float)prng.NextDouble() * 2 - 1, (float)prng.NextDouble() * 2 - 1, (float)prng.NextDouble() * 2 - 1) * offsetRange;
 		}
-		Debug.Log(offsets);
+		
 		offsetsBuffer.SetData(offsets);
 		densityShader.SetBuffer(0, "_points", pointsBuffer);
 		densityShader.SetFloat("_numPointsPerAxis", numPointsPerAxis);
@@ -135,10 +141,14 @@ public class TerrainGenerator : MonoBehaviour
 		densityShader.SetFloat("_hardFloor", hardFloorHeight);
 		densityShader.SetFloat("_hardFloorWeight", hardFloorWeight);
 		densityShader.SetVector("_params", shaderParams);
-
+		
+		// mountain params
 		densityShader.SetFloat("_mountainous", mountainous);
-		densityShader.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
+		densityShader.SetFloat("_smoothness", smoothness);
+		densityShader.SetFloat("_mountainHeight", steepness);
+		densityShader.SetFloat("_merging", height);
 
+		densityShader.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
 
 	}
 	
@@ -207,8 +217,9 @@ public class TerrainGenerator : MonoBehaviour
         //numPolysBuffer.Release();
         verticesBuffer.Release();
         trianglesBuffer.Release();
+		offsetsBuffer.Release();
 
-    }
-	
+	}
+
 
 }
