@@ -45,8 +45,8 @@ Material:
     - _ReflectionContribution: 0.5
     - _RefractionStrength: 0
     - _SparkleExponent: 25000
-    - _SparkleScale: 25
-    - _SparkleSpeed: 0.1
+    - _SparkleScale: 15
+    - _SparkleSpeed: 0.01
     - _SunSpecularExponent: 1
     - _VertexNormalDelta: 0.01
     - _Wave1Amplitude: 0.1
@@ -58,14 +58,15 @@ Material:
     - _Wave2Speed: 1
     - _Wave2Wavelength: 7.5
     - _WaveNormalDelta: 0.01
-    - _WaveNormalScale: 25
-    - _WaveNormalSpeed: 0.05
+    - _WaveNormalScale: 15
+    - _WaveNormalSpeed: 0.01
     m_Colors:
     - _DeepColor: {r: 0.20392156, g: 1, b: 0.41706988, a: 1}
     - _EdgeFoamColor: {r: 1, g: 1, b: 1, a: 1}
     - _FarColor: {r: 0.08343716, g: 0.29864755, b: 0.7075472, a: 1}
     - _SSSColor: {r: 0, g: 0, b: 0, a: 1}
-    - _ShadowColor: {r: 0.03551086, g: 0.30351532, b: 0.3584906, a: 1}
+    - _ShadowColor: {r: 0.0760057, g: 0.28722823, b: 0.3301887, a: 1}
     - _ShallowColor: {r: 1.1505303, g: 1.299991, b: 0.8891448, a: 1}
     - _SparkleColor: {r: 0.740566, g: 1, b: 0.9357789, a: 1}
     - _SunSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_BuildTextureStacks: []

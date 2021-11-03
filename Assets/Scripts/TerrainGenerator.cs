@@ -43,7 +43,7 @@ public class TerrainGenerator : MonoBehaviour
 	public Vector3 boundsSize;
 	public Vector3 offset = Vector3.zero;
 
-
+	[Header("Vegetation")] public GameObject treeToInst;
 	
 	[Range(2, 2048)]
 	public int numPointsPerAxis = 30;
@@ -67,11 +67,14 @@ public class TerrainGenerator : MonoBehaviour
         renderer.receiveShadows = true;
         mat = renderer.material;
 		CreateBuffers();
-		GenerateDensity();
-		Generate();
+		GenerateNewTerrain();
     }
 
-
+	public void GenerateNewTerrain(){
+		GenerateDensity();
+		Generate();
+		GenerateVegetation();
+	}
     
 
     void Update()
@@ -221,5 +224,35 @@ public class TerrainGenerator : MonoBehaviour
 
 	}
 
+    private void GenerateVegetation(){
+	    ClearVegetation();
+	    
+	    Mesh mesh = gameObject.GetComponent<MeshFilter>().mesh;
+	    Vector3[] normals = mesh.normals;
+	    Vector3[] vertices = mesh.vertices;
+	    Matrix4x4 localToWorld = transform.localToWorldMatrix;
+	    System.Random random = new System.Random ();
+	    Quaternion[] rotations = new Quaternion[vertices.Length];
+	    GameObject tree;
+ 
+	    for (int i = 0; i < vertices.Length; i++) {
+		    Vector3 world_v = localToWorld.MultiplyPoint3x4(vertices[i]);
+		    rotations[i] = Quaternion.LookRotation(normals[i]);
+		    
+		    if (random.NextDouble() > 0.9f && world_v.y > 2f && world_v.y < 2.001f) {
+			    Debug.Log("test");
+			    //Vector3 spawnPoint = world_v;
+			    tree = Instantiate (treeToInst, world_v, rotations[i]);
+			    tree.transform.SetParent (gameObject.transform, false);
+		    }
+	    }
+    }
 
+    private void ClearVegetation(){
+	    GameObject[] oldVegetation = GameObject.FindGameObjectsWithTag("Vegetation");
+
+	    foreach (GameObject model in oldVegetation){
+		    Destroy(model);
+	    }
+    }
 }
