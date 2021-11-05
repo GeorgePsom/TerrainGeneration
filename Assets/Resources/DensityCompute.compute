@@ -82,8 +82,8 @@ void Density(int3 id: SV_DispatchThreadID)
 		groundVal += _hardFloorWeight;
 	}
 	//groundVal = pos.y > 1.0f ? 0.0f : groundVal;
-	groundVal = pos.y > -6.0f ? 0.0f : groundVal;
-	groundVal = 0.0;
+	groundVal = pos.y > -7.0f ? 0.0f : groundVal;
+	
 	// Caves
 	noise = 0;
 	frequency = _scale / 100.0;
@@ -107,7 +107,7 @@ void Density(int3 id: SV_DispatchThreadID)
 	/*if (pos.y < -7)
 		depthVal -= 20;*/
 	depthVal = pos.y > 1.0f ? 0.0f : depthVal;
-	depthVal = pos.y < -4.0f ? 0.0f : depthVal;
+	depthVal = pos.y < -5.0f ? 0.0f : depthVal;
 	
 
 	// Mountains
@@ -141,15 +141,15 @@ void Density(int3 id: SV_DispatchThreadID)
 	float interpolatedNoise = t * depthVal + (1 - t) * mountainVal;
 
 	float t2 = (pos.y + 7) / 2.0f;
-	float interpolatedDepth = t * depthVal + (1 - t) * groundVal;
+	float interpolatedDepth = t2 * groundVal + (1 - t2) * depthVal;
 	
 	
 
 	
 	float finalVal = pos.y > 1 ? mountainVal :
 		pos.y >= -1 ? interpolatedNoise :
-		pos.y > -5 ? depthVal :
-		pos.y > -7 ? interpolatedDepth : groundVal;
+		pos.y > -7 ? depthVal :
+		pos.y > -5 ? interpolatedDepth : groundVal;
 	
 	int index = indexFromCoord(id.x, id.y, id.z);
 	//finalVal = -pos.y   + noise * _noiseWeight;
