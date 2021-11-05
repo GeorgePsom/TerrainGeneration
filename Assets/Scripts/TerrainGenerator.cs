@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEditor;
 
@@ -23,6 +24,22 @@ public class TerrainGenerator : MonoBehaviour
 	public float steepness;
 	[Range(0, 10)]
 	public float height;
+
+	[Header("Caves")]
+	[Range(1, 5)]
+	public float cave_Smoothness = 1;
+	[Range(1, 5)]
+	public float terraces = 1.5f;
+	[Range(0.5f, 10.0f)]
+	public float scale;
+	[Range(0.5f, 20.0f)]
+	public float fillness;
+
+	[Header("Depth")]
+	[Range(0, 2.0f)]
+	public float warpFrequency = 0.04f;
+	[Range(-20, 20)]
+	public float warpAmplitude = 4.0f;
 
 	[Header("Noise")]
 	public int seed;
@@ -63,7 +80,8 @@ public class TerrainGenerator : MonoBehaviour
 	void Start()
     {
 		meshFilter = GetComponent<MeshFilter>();
-        MeshRenderer renderer = GetComponent<MeshRenderer>();
+		mesh = new Mesh();
+		MeshRenderer renderer = GetComponent<MeshRenderer>();
         renderer.receiveShadows = true;
         mat = renderer.material;
 		CreateBuffers();
@@ -148,8 +166,19 @@ public class TerrainGenerator : MonoBehaviour
 		densityShader.SetFloat("_mountainHeight", steepness);
 		densityShader.SetFloat("_merging", height);
 
-		densityShader.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
+		// caves params
+		densityShader.SetFloat("_fillness", fillness);
+		densityShader.SetFloat("_caveSmoothness", cave_Smoothness);
+		densityShader.SetFloat("_terraces", 5.1f - terraces);
+		densityShader.SetFloat("_scale", scale);
 
+		// Depth
+		densityShader.SetFloat("_warpFrequency", warpFrequency);
+		densityShader.SetFloat("_warpAmplitude", warpAmplitude);
+
+		densityShader.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
+		Array.Clear(offsets, 0, offsets.Length);
+		offsetsBuffer.Release();
 	}
 	
     private void Generate()
@@ -205,8 +234,8 @@ public class TerrainGenerator : MonoBehaviour
         verticesBuffer.GetData(verticesArray);
         trianglesBuffer.GetData(trianglesArray);
 
-		
-		mesh = new Mesh();
+
+		mesh.Clear();
 		mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 		mesh.vertices = verticesArray;
         mesh.triangles = trianglesArray;
@@ -217,7 +246,11 @@ public class TerrainGenerator : MonoBehaviour
         //numPolysBuffer.Release();
         verticesBuffer.Release();
         trianglesBuffer.Release();
-		offsetsBuffer.Release();
+		
+		Array.Clear(polysArray, 0, numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis);
+		Array.Clear(prefixSumArray, 0, numVoxelsPerAxis * numVoxelsPerAxis * numVoxelsPerAxis);
+		Array.Clear(verticesArray, 0, 3 * totalPolygs);
+		Array.Clear(trianglesArray, 0, 3 * totalPolygs);
 
 	}
 
