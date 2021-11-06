@@ -107,7 +107,7 @@ void Density(int3 id: SV_DispatchThreadID)
 	/*if (pos.y < -7)
 		depthVal -= 20;*/
 	depthVal = pos.y > 1.0f ? 0.0f : depthVal;
-	depthVal = pos.y < -5.0f ? 0.0f : depthVal;
+	depthVal = pos.y < -7.0f ? 0.0f : depthVal;
 	
 
 	// Mountains
