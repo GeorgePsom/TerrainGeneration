@@ -21,9 +21,9 @@ public class TerrainGenerator : MonoBehaviour
 	[Range(1, 16)]
 	public float smoothness = 5;
 	[Range(0, 10)]
-	public float steepness;
+	public float steepness = 2.0f;
 	[Range(0, 10)]
-	public float height;
+	public float height = 2.0f;
 
 	[Header("Caves")]
 	[Range(1, 5)]
@@ -38,22 +38,39 @@ public class TerrainGenerator : MonoBehaviour
 	[Header("Depth")]
 	[Range(0, 2.0f)]
 	public float warpFrequency = 0.04f;
-	[Range(-20, 20)]
+	[Range(0, 20)]
 	public float warpAmplitude = 4.0f;
+	[Range(1, 200)]
+	public float depthFillness = 20.0f;
+	[Range(80, 100)]
+	public float inBetweenLevelMerge = 90.0f;
 
 	[Header("Noise")]
+	[HideInInspector]
 	public int seed;
+	[HideInInspector]
 	public int numOctaves = 4;
+	[HideInInspector]
 	public float lacunarity = 2;
+	[HideInInspector]
 	public float persistence = 0.5f;
+	[HideInInspector]
 	public float noiseScale = 1;
+	[HideInInspector]
 	public float noiseWeight = 1.0f;
+	[HideInInspector]
 	public bool closeEdges;
+	[HideInInspector]
 	public float floorOffset = 1;
+	[HideInInspector]
 	public float weightMultiplier = 1;
+	[HideInInspector]
 	public float hardFloorHeight;
+	[HideInInspector]
 	public float hardFloorWeight;
+	[HideInInspector]
 	public Vector4 shaderParams;
+
 
 	[Header("World")]
 	public float isoLevel;
@@ -61,7 +78,7 @@ public class TerrainGenerator : MonoBehaviour
 	public Vector3 offset = Vector3.zero;
 
 	[Header("Vegetation")] public GameObject treeToInst;
-	
+	[HideInInspector]
 	[Range(2, 2048)]
 	public int numPointsPerAxis = 30;
 
@@ -178,6 +195,10 @@ public class TerrainGenerator : MonoBehaviour
 		// Depth
 		densityShader.SetFloat("_warpFrequency", warpFrequency);
 		densityShader.SetFloat("_warpAmplitude", warpAmplitude);
+		densityShader.SetFloat("_depthFillness", depthFillness);
+		densityShader.SetFloat("_intermediate", (101.0f-inBetweenLevelMerge));
+
+		
 
 		densityShader.Dispatch(0, numThreadsPerAxis, numThreadsPerAxis, numThreadsPerAxis);
 		Array.Clear(offsets, 0, offsets.Length);
