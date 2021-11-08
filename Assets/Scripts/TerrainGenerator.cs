@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using UnityEditor;
+using Random = System.Random;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
@@ -77,7 +78,8 @@ public class TerrainGenerator : MonoBehaviour
 	public Vector3 boundsSize;
 	public Vector3 offset = Vector3.zero;
 
-	[Header("Vegetation")] public GameObject treeToInst;
+	[Header("Vegetation")] 
+	public List<GameObject> vegetation;
 	[HideInInspector]
 	[Range(2, 2048)]
 	public int numPointsPerAxis = 30;
@@ -293,10 +295,9 @@ public class TerrainGenerator : MonoBehaviour
 		    Vector3 world_v = localToWorld.MultiplyPoint3x4(vertices[i]);
 		    rotations[i] = Quaternion.LookRotation(normals[i]);
 		    
-		    if (random.NextDouble() > 0.9f && world_v.y > 2f && world_v.y < 2.001f) {
-			    Debug.Log("test");
+		    if (random.NextDouble() > 0.995f && world_v.y > 3f && world_v.y < 9.005f) {
 			    //Vector3 spawnPoint = world_v;
-			    tree = Instantiate (treeToInst, world_v, rotations[i]);
+			    tree = Instantiate (vegetation[UnityEngine.Random.Range(0, vegetation.Count)] , vertices[i], Quaternion.Euler(0, UnityEngine.Random.Range(0.0f, 360.0f), 0));
 			    tree.transform.SetParent (gameObject.transform, false);
 		    }
 	    }
