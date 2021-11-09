@@ -38,16 +38,16 @@ Shader "Custom/NewSurfaceShader"
 				//float drawStrength = saturate(sign(heightPercent - baseStartHeights[i]));
 				//o.Albedo = o.Albedo * (1-drawStrength) + baseColours[i] * drawStrength;
 				fixed4 col;
-				if (IN.worldPos.y >= -5 && IN.worldPos.y < 0){
+				if (IN.worldPos.y >= -7 && IN.worldPos.y < -2){
                     col = fixed4(0.663f, 0.663f, 0.663, 1.0f);
                 }
-                else if(IN.worldPos.y >= 0 && IN.worldPos.y < 2){
+                else if(IN.worldPos.y >= -2 && IN.worldPos.y < 0){
                     col = fixed4(1.0f, 0.8509f, 0.6666f, 1.0f);
                 }
-                else if(IN.worldPos.y >= 2 && IN.worldPos.y < 10){
+                else if(IN.worldPos.y >= 0 && IN.worldPos.y < 9){
                     col = fixed4(0.0f, 1.0f, 0.0f, 1.0f);
                 }
-                else if(IN.worldPos.y >= 10 && IN.worldPos.y < 17){
+                else if(IN.worldPos.y >= 9 && IN.worldPos.y < 15){
                     col = fixed4(0.5450f, 0.2705f, 0.0745f, 1.0f);
                 }
                 else{

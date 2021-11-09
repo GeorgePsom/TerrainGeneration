@@ -80,7 +80,7 @@ public class TerrainGenerator : MonoBehaviour
 
 	[Header("Vegetation")] 
 	public List<GameObject> vegetation;
-	[Range(2.0f, 10.0f)]
+	[Range(0.0f, 8.0f)]
 	public float heightStart, heightEnd;
 	[Range(0, 1.0f)]
 	public float vegetationProbability;

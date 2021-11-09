@@ -5,7 +5,9 @@ using UnityEngine;
 using UnityEngine;
 using System.Collections;
  
-public class FlyCam : MonoBehaviour {
+public class FlyCam : MonoBehaviour{
+
+    public GameObject postProcessVolume;
 
     public float mainSpeed = 100.0f;   // Regular speed
     public float shiftAdd = 250.0f;    // Multiplied by how long shift is held. Basically camera is running, useful for large landmasses
@@ -50,6 +52,13 @@ public class FlyCam : MonoBehaviour {
           } else {
               transform.Translate(p);
           }
+        }
+
+        if (gameObject.transform.position.y < -1 && postProcessVolume.activeSelf){
+            RenderSettings.fog = true;
+        }
+        else{
+            RenderSettings.fog = false;
         }
     }
      
