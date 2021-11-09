@@ -1330,7 +1330,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1633976111}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.98828113
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -8864,35 +8864,24 @@ MonoBehaviour:
   inBetweenLevelMerge: 92.9
   seed: 1
   numOctaves: 8
-  lacunarity: 2
-  persistence: 0.54
-  noiseScale: 12
-  noiseWeight: 6.35
+  lacunarity: 0.05
+  persistence: 0.5
+  noiseScale: 2
+  noiseWeight: 25.55
   closeEdges: 0
   floorOffset: 0
   weightMultiplier: 10
   hardFloorHeight: 0
   hardFloorWeight: 0
-  shaderParams: {x: 0.5, y: 3, z: 0, w: 1}
+  shaderParams: {x: 3.5, y: 5.75, z: 0, w: 1}
   isoLevel: 9.07
   boundsSize: {x: 20, y: 20, z: 20}
   offset: {x: 0, y: 0, z: 0}
-  vegetation:
-  - {fileID: 8903058273634794869, guid: f1fc5bb90ac285e4486771552d63bcb8, type: 3}
-  - {fileID: 3356751432538110193, guid: ffbddc4ef9676cc419e81e06aaa836d8, type: 3}
-  - {fileID: 4385080170328260021, guid: ff62b58c5a9ea164fa8ddf8038e10cd1, type: 3}
-  - {fileID: 5440707293445505367, guid: 494f6d43e170e9145bc7865d243ee00b, type: 3}
-  - {fileID: 7405846476849542632, guid: c6308cb7062fac34e8e50600086b12a1, type: 3}
-  - {fileID: 2222111361404534124, guid: 88f2fd29f58b9734683512546acec310, type: 3}
-  - {fileID: 4661435515762455780, guid: e289bf5debb17f6459818c207d781953, type: 3}
-  - {fileID: 4263922822445002727, guid: 3cdafb3c2f54d434894928d72d282874, type: 3}
-  - {fileID: 6239969156481229051, guid: b71b0f8d2f881c743a85228f3030d1cb, type: 3}
-  - {fileID: 5202732821079448320, guid: cebfacc247a640945a2c30b442202fca, type: 3}
-  - {fileID: 108507113624723981, guid: eebb56c82efbd8d4bb0eb6bd925a0e9d, type: 3}
-  heightStart: 3
-  heightEnd: 6
-  vegetationProbability: 0.002
-  numPointsPerAxis: 128
+  vegetation: []
+  heightStart: 0
+  heightEnd: 0
+  vegetationProbability: 0
+  numPointsPerAxis: 256
 --- !u!114 &1304001969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10739,7 +10728,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.000021224474}
+  m_AnchoredPosition: {x: 0, y: 0.004940728}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1513991276
