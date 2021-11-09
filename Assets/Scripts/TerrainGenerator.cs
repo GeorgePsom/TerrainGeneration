@@ -80,6 +80,11 @@ public class TerrainGenerator : MonoBehaviour
 
 	[Header("Vegetation")] 
 	public List<GameObject> vegetation;
+	[Range(2.0f, 10.0f)]
+	public float heightStart, heightEnd;
+	[Range(0, 1.0f)]
+	public float vegetationProbability;
+	
 	[HideInInspector]
 	[Range(2, 2048)]
 	public int numPointsPerAxis = 30;
@@ -295,7 +300,7 @@ public class TerrainGenerator : MonoBehaviour
 		    Vector3 world_v = localToWorld.MultiplyPoint3x4(vertices[i]);
 		    rotations[i] = Quaternion.LookRotation(normals[i]);
 		    
-		    if (random.NextDouble() > 0.995f && world_v.y > 3f && world_v.y < 9.005f) {
+		    if (random.NextDouble() < vegetationProbability && world_v.y > heightStart && world_v.y < heightEnd) {
 			    //Vector3 spawnPoint = world_v;
 			    tree = Instantiate (vegetation[UnityEngine.Random.Range(0, vegetation.Count)] , vertices[i], Quaternion.Euler(0, UnityEngine.Random.Range(0.0f, 360.0f), 0));
 			    tree.transform.SetParent (gameObject.transform, false);

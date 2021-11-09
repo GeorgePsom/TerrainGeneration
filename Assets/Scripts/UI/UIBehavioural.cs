@@ -8,8 +8,10 @@ using UnityEngine.UI;
 public class UIBehavioural : MonoBehaviour{
     public TerrainGenerator terrainGen;
 
-    public TextMeshProUGUI seedValue, mountainousValue, smoothnessValue, steepnessValue, heightValue, caveSmoothness, terracesValue, scaleValue, fillnessValue, warpFrequencyValue, warpAmplitudeValue, depthFillnessValue, inbetweenLevelMergeValue;
-    public Slider seedSlider, mountainousSlider, smoothnessSlider, steepnessSlider, heightSlider, caveSmoothnessSlider, terracesSlider, scaleSlider, fillnessSlider, warpFrequencySlider, warpAmplitudeSlider, depthFillnessSlider, inbetweenLevelMergeSlider;
+    public TextMeshProUGUI seedValue, mountainousValue, smoothnessValue, steepnessValue, heightValue, caveSmoothness, terracesValue, scaleValue, fillnessValue, warpFrequencyValue, warpAmplitudeValue, depthFillnessValue, inbetweenLevelMergeValue, heightStartValue, heightEndValue, vegetationProbabilityValue;
+    public Slider seedSlider, mountainousSlider, smoothnessSlider, steepnessSlider, heightSlider, caveSmoothnessSlider, terracesSlider, scaleSlider, fillnessSlider, warpFrequencySlider, warpAmplitudeSlider, depthFillnessSlider, inbetweenLevelMergeSlider, heightStartSlider, heightEndSlider, vegetationProbabilitySlider;
+
+    public GameObject waterLevel, waterPostProcessing;
     
     // Start is called before the first frame update
     void Start(){
@@ -28,6 +30,11 @@ public class UIBehavioural : MonoBehaviour{
         warpAmplitudeSlider.value = terrainGen.warpAmplitude;
         depthFillnessSlider.value = terrainGen.depthFillness;
         inbetweenLevelMergeSlider.value = terrainGen.inBetweenLevelMerge;
+        
+        heightStartSlider.value = terrainGen.warpAmplitude;
+        heightEndSlider.value = terrainGen.depthFillness;
+        vegetationProbabilitySlider.value = Remap(terrainGen.vegetationProbability, 0.0f, 0.01f, 0.0f, 1.0f);
+        
     }
 
     // Update is called once per frame
@@ -103,5 +110,33 @@ public class UIBehavioural : MonoBehaviour{
     public void SetInBetweenLevelMerge(float value){
         terrainGen.inBetweenLevelMerge = value;
         inbetweenLevelMergeValue.text = value.ToString("F1");
+    }
+    
+    public void SetHeightStartValue(float value){
+        terrainGen.heightStart = value;
+        heightStartValue.text = value.ToString("F1");
+    }
+    
+    public void SetHeightEndValue(float value){
+        terrainGen.inBetweenLevelMerge = value;
+        heightEndValue.text = value.ToString("F1");
+    }
+    
+    public void SetVegetationProbability(float value){
+        terrainGen.vegetationProbability = Remap(value, 0.0f, 1.0f, 0.0f, 0.01f);;
+        vegetationProbabilityValue.text = value.ToString("F3");
+    }
+    
+    public static float Remap (float value, float from1, float to1, float from2, float to2) {
+        return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
+    }
+
+    public void ToggleGO(GameObject go){
+        if (go.activeSelf){
+            go.SetActive(false);
+        }
+        else{
+            go.SetActive(true);
+        }
     }
 }
