@@ -80,7 +80,7 @@ public class TerrainGenerator : MonoBehaviour
 
 	[Header("Vegetation")] 
 	public List<GameObject> vegetation;
-	[Range(0.0f, 8.0f)]
+	[Range(0.0f, 6.0f)]
 	public float heightStart, heightEnd;
 	[Range(0, 1.0f)]
 	public float vegetationProbability;
@@ -112,10 +112,13 @@ public class TerrainGenerator : MonoBehaviour
 		GenerateNewTerrain();
     }
 
-	public void GenerateNewTerrain(){
+	public void GenerateNewTerrain(bool vegetation = false){
 		GenerateDensity();
 		Generate();
-		GenerateVegetation();
+		
+		if (vegetation){
+			GenerateVegetation();
+		}
 	}
     
 
@@ -127,8 +130,8 @@ public class TerrainGenerator : MonoBehaviour
 	}
     private void OnValidate()
     {
-		GenerateDensity();
-		Generate();
+		/*GenerateDensity();
+		Generate();*/
     }
 
     private void CreateBuffers()
@@ -293,17 +296,15 @@ public class TerrainGenerator : MonoBehaviour
 	    Vector3[] vertices = mesh.vertices;
 	    Matrix4x4 localToWorld = transform.localToWorldMatrix;
 	    System.Random random = new System.Random ();
-	    Quaternion[] rotations = new Quaternion[vertices.Length];
 	    GameObject tree;
  
 	    for (int i = 0; i < vertices.Length; i++) {
 		    Vector3 world_v = localToWorld.MultiplyPoint3x4(vertices[i]);
-		    rotations[i] = Quaternion.LookRotation(normals[i]);
-		    
+
 		    if (random.NextDouble() < vegetationProbability && world_v.y > heightStart && world_v.y < heightEnd) {
 			    //Vector3 spawnPoint = world_v;
 			    tree = Instantiate (vegetation[UnityEngine.Random.Range(0, vegetation.Count)] , vertices[i], Quaternion.Euler(0, UnityEngine.Random.Range(0.0f, 360.0f), 0));
-			    tree.transform.SetParent (gameObject.transform, false);
+			    tree.transform.SetParent(gameObject.transform, false);
 		    }
 	    }
     }

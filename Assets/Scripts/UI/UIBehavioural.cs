@@ -43,8 +43,8 @@ public class UIBehavioural : MonoBehaviour{
         
     }
 
-    public void GenerateNewTerrain(){
-        terrainGen.GenerateNewTerrain();
+    public void GenerateNewTerrain(bool vegetation = false){
+        terrainGen.GenerateNewTerrain(vegetation);
     }
 
     public void SetSeed(float value){
@@ -56,25 +56,25 @@ public class UIBehavioural : MonoBehaviour{
     public void SetMountainous(float value){
         terrainGen.mountainous = (int)value;
         mountainousValue.text = value.ToString();
-        GenerateNewTerrain();
+        GenerateNewTerrain(true);
     }
     
     public void SetSmoothness(float value){
         terrainGen.smoothness = (int)value;
         smoothnessValue.text = value.ToString();
-        GenerateNewTerrain();
+        GenerateNewTerrain(true);
     }
     
     public void SetSteepness(float value){
         terrainGen.steepness = (int)value;
         steepnessValue.text = value.ToString();
-        GenerateNewTerrain();
+        GenerateNewTerrain(true);
     }
     
     public void SetHeight(float value){
         terrainGen.height = (int)value;
         heightValue.text = value.ToString();
-        GenerateNewTerrain();
+        GenerateNewTerrain(true);
     }
 
     public void SetCaveSmoothness(float value){
@@ -128,19 +128,19 @@ public class UIBehavioural : MonoBehaviour{
     public void SetHeightStartValue(float value){
         terrainGen.heightStart = value;
         heightStartValue.text = value.ToString("F1");
-        GenerateNewTerrain();
+        GenerateNewTerrain(true);
     }
     
     public void SetHeightEndValue(float value){
         terrainGen.inBetweenLevelMerge = value;
         heightEndValue.text = value.ToString("F1");
-        GenerateNewTerrain();
+        GenerateNewTerrain(true);
     }
     
     public void SetVegetationProbability(float value){
         terrainGen.vegetationProbability = Remap(value, 0.0f, 1.0f, 0.0f, 0.01f);;
         vegetationProbabilityValue.text = value.ToString("F3");
-        GenerateNewTerrain();
+        GenerateNewTerrain(true);
     }
     
     public static float Remap (float value, float from1, float to1, float from2, float to2) {

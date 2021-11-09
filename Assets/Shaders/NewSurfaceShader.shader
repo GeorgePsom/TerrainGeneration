@@ -44,10 +44,10 @@ Shader "Custom/NewSurfaceShader"
                 else if(IN.worldPos.y >= -2 && IN.worldPos.y < 0){
                     col = fixed4(1.0f, 0.8509f, 0.6666f, 1.0f);
                 }
-                else if(IN.worldPos.y >= 0 && IN.worldPos.y < 9){
+                else if(IN.worldPos.y >= 0 && IN.worldPos.y < 6){
                     col = fixed4(0.0f, 1.0f, 0.0f, 1.0f);
                 }
-                else if(IN.worldPos.y >= 9 && IN.worldPos.y < 15){
+                else if(IN.worldPos.y >= 6 && IN.worldPos.y < 15){
                     col = fixed4(0.5450f, 0.2705f, 0.0745f, 1.0f);
                 }
                 else{
