@@ -50,78 +50,78 @@ public class UIBehavioural : MonoBehaviour{
     public void SetSeed(float value){
         terrainGen.seed = (int)value;
         seedValue.text = value.ToString();
-        GenerateNewTerrain();
+        GenerateNewTerrain(true);
     }
     
     public void SetMountainous(float value){
-        terrainGen.mountainous = (int)value;
-        mountainousValue.text = value.ToString();
+        terrainGen.mountainous = value;
+        mountainousValue.text = value.ToString("F2");
         GenerateNewTerrain(true);
     }
     
     public void SetSmoothness(float value){
-        terrainGen.smoothness = (int)value;
-        smoothnessValue.text = value.ToString();
+        terrainGen.smoothness = value;
+        smoothnessValue.text = value.ToString("F2");
         GenerateNewTerrain(true);
     }
     
     public void SetSteepness(float value){
-        terrainGen.steepness = (int)value;
-        steepnessValue.text = value.ToString();
+        terrainGen.steepness = value;
+        steepnessValue.text = value.ToString("F2");
         GenerateNewTerrain(true);
     }
     
     public void SetHeight(float value){
-        terrainGen.height = (int)value;
-        heightValue.text = value.ToString();
+        terrainGen.height = value;
+        heightValue.text = value.ToString("F2");
         GenerateNewTerrain(true);
     }
 
     public void SetCaveSmoothness(float value){
         terrainGen.cave_Smoothness = value;
-        caveSmoothness.text = value.ToString("F1");
+        caveSmoothness.text = value.ToString("F2");
         GenerateNewTerrain();
     }
     
     public void SetTerraces(float value){
         terrainGen.terraces = value;
-        terracesValue.text = value.ToString("F1");
+        terracesValue.text = value.ToString("F2");
         GenerateNewTerrain();
     }
     
     public void SetScale(float value){
         terrainGen.scale = value;
-        scaleValue.text = value.ToString("F1");
+        scaleValue.text = value.ToString("F2");
         GenerateNewTerrain();
     }
     
     public void SetFillness(float value){
         terrainGen.fillness = value;
-        fillnessValue.text = value.ToString("F1");
+        fillnessValue.text = value.ToString("F2");
         GenerateNewTerrain();
     }
     
     public void SetWarpFrequency(float value){
         terrainGen.warpFrequency = value;
-        warpFrequencyValue.text = value.ToString("F1");
+        warpFrequencyValue.text = value.ToString("F2");
         GenerateNewTerrain();
     }
     
     public void SetWarpAmplitude(float value){
         terrainGen.warpAmplitude = value;
-        warpAmplitudeValue.text = value.ToString("F1");
+        warpAmplitudeValue.text = value.ToString("F2");
         GenerateNewTerrain();
     }
     
     public void SetDepthFillness(float value){
-        terrainGen.depthFillness = (int)value;
-        depthFillnessValue.text = value.ToString("F1");
+        terrainGen.depthFillness = value;
+        depthFillnessValue.text = value.ToString("F2");
         GenerateNewTerrain();
     }
     
     public void SetInBetweenLevelMerge(float value){
         terrainGen.inBetweenLevelMerge = value;
-        inbetweenLevelMergeValue.text = value.ToString("F1");
+        inbetweenLevelMergeValue.text = value.ToString("F2");
         GenerateNewTerrain();
     }
     

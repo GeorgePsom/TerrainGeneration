@@ -85,6 +85,8 @@ public class TerrainGenerator : MonoBehaviour
 	[Range(0, 1.0f)]
 	public float vegetationProbability;
 	
+	public Transform vegetationParent;
+	
 	[HideInInspector]
 	[Range(2, 2048)]
 	public int numPointsPerAxis = 30;
@@ -304,7 +306,7 @@ public class TerrainGenerator : MonoBehaviour
 		    if (random.NextDouble() < vegetationProbability && world_v.y > heightStart && world_v.y < heightEnd) {
 			    //Vector3 spawnPoint = world_v;
 			    tree = Instantiate (vegetation[UnityEngine.Random.Range(0, vegetation.Count)] , vertices[i], Quaternion.Euler(0, UnityEngine.Random.Range(0.0f, 360.0f), 0));
-			    tree.transform.SetParent(gameObject.transform, false);
+			    tree.transform.SetParent(vegetationParent.transform);
 		    }
 	    }
     }
