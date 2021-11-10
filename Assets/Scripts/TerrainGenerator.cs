@@ -294,7 +294,6 @@ public class TerrainGenerator : MonoBehaviour
 	    ClearVegetation();
 	    
 	    Mesh mesh = gameObject.GetComponent<MeshFilter>().mesh;
-	    Vector3[] normals = mesh.normals;
 	    Vector3[] vertices = mesh.vertices;
 	    Matrix4x4 localToWorld = transform.localToWorldMatrix;
 	    System.Random random = new System.Random ();
